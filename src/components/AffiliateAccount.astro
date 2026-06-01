@@ -1,0 +1,758 @@
+---
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+
+type Locale = "es" | "en";
+
+const locale = (Astro.props.locale ?? "es") as Locale;
+const isEn = locale === "en";
+const SUPABASE_URL = (import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
+const SUPABASE_ANON_KEY = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+const SITE_URL = (import.meta.env.PUBLIC_SITE_URL ?? "https://vexoralabs.shop").replace(/\/$/, "");
+const hasSupabase = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+const t = {
+  heroKicker: isEn ? "Vexora Labs Affiliates" : "Vexora Labs Afiliados",
+  heroTitle: isEn
+    ? "Earn commissions by recommending digital services."
+    : "Gana comisiones recomendando servicios digitales.",
+  heroText: isEn
+    ? "Share your link, register referred sales with an internal invoice, and let the team review every operation before releasing commission."
+    : "Comparte tu link, registra ventas con invoice interno y deja que el equipo revise cada operación antes de liberar comisión.",
+  heroStats: isEn
+    ? ["Websites", "Discord bots", "Automations", "Minecraft", "UI/UX", "AI systems"]
+    : ["Páginas web", "Bots de Discord", "Automatizaciones", "Minecraft", "UI/UX", "Soluciones con IA"],
+  whatsapp: isEn ? "Message on WhatsApp" : "Escribir por WhatsApp",
+  guidedBrief: isEn ? "Guided brief" : "Brief guiado",
+  configTitle: isEn ? "Supabase is not available in this running build." : "Supabase no está disponible en esta ejecución.",
+  configBody: isEn
+    ? "Add PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY in .env for local development, or in Netlify environment variables for production. Then restart npm run dev or redeploy."
+    : "Agrega PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY en .env para desarrollo local, o en las variables de entorno de Netlify para producción. Luego reinicia npm run dev o redeploy.",
+  accessKicker: isEn ? "Access" : "Acceso",
+  accountTitle: isEn ? "Your account" : "Tu cuenta",
+  signin: isEn ? "Sign in" : "Entrar",
+  signup: isEn ? "Sign up" : "Registro",
+  email: "Email",
+  username: isEn ? "Username" : "Nombre de usuario",
+  invite: isEn ? "Invitation code" : "Código de invitación",
+  password: isEn ? "Password" : "Contraseña",
+  continue: isEn ? "Continue" : "Continuar",
+  logout: isEn ? "Sign out" : "Cerrar sesión",
+  statusKicker: isEn ? "Status" : "Estado",
+  rulesTitle: isEn ? "Quick rules" : "Reglas rápidas",
+  rules: isEn
+    ? [
+        "Your referral is linked when the user signs in or signs up with your code.",
+        "A reported sale stays pending; it does not create a commission by itself.",
+        "Only an admin can approve, reject, or mark commissions as paid.",
+        "Discord notifications are sent from the backend, never from the browser."
+      ]
+    : [
+        "Tu referido queda ligado cuando inicia sesión o se registra con tu código.",
+        "Una venta reportada queda en pendiente; no crea comisión por sí sola.",
+        "Solo un admin puede aprobar, rechazar o marcar comisiones como pagadas.",
+        "Las notificaciones a Discord salen desde backend, nunca desde el navegador."
+      ],
+  metrics: isEn
+    ? ["Pending balance", "Lifetime earned", "Referrals", "Pending sales"]
+    : ["Saldo pendiente", "Histórico ganado", "Referidos", "Ventas pendientes"],
+  shareKicker: isEn ? "Share" : "Compartir",
+  affiliateLink: isEn ? "Your affiliate link" : "Tu link de afiliado",
+  code: isEn ? "Code" : "Código",
+  link: "Link",
+  copy: isEn ? "Copy" : "Copiar",
+  payoutEmail: isEn ? "Payout email" : "Email para pagos",
+  payoutMethod: isEn ? "Payout method" : "Método de pago",
+  payoutPlaceholder: isEn ? "Bank transfer / PayPal" : "Transferencia / PayPal",
+  savePayout: isEn ? "Save payout details" : "Guardar datos de pago",
+  saleKicker: isEn ? "Referred sale" : "Venta referida",
+  saleTitle: isEn ? "Report sale" : "Reportar venta",
+  generateInvoice: isEn ? "Generate invoice" : "Generar invoice",
+  invoiceId: "Invoice ID",
+  amount: isEn ? "Amount MXN" : "Monto MXN",
+  soldService: isEn ? "Sold service" : "Servicio vendido",
+  selectService: isEn ? "Select service" : "Selecciona servicio",
+  services: isEn
+    ? ["Websites", "Discord bots", "Automations", "Minecraft servers", "UI/UX", "AI systems", "Digital products"]
+    : ["Páginas web", "Bots de Discord", "Automatizaciones", "Servidores de Minecraft", "UI/UX", "Soluciones con IA", "Productos digitales"],
+  customer: isEn ? "Customer" : "Cliente",
+  contact: isEn ? "Contact" : "Contacto",
+  contactPlaceholder: isEn ? "WhatsApp or username" : "WhatsApp o usuario",
+  customerEmail: isEn ? "Customer email" : "Email del cliente",
+  paymentMethod: isEn ? "Payment method" : "Método de pago",
+  proofUrl: isEn ? "Optional proof URL" : "Comprobante URL opcional",
+  notes: isEn ? "Notes" : "Notas",
+  submitReview: isEn ? "Send for review" : "Enviar a revisión",
+  referralsTitle: isEn ? "Referrals" : "Referidos",
+  ordersTitle: isEn ? "Recent orders" : "Órdenes recientes",
+  commissionsTitle: isEn ? "Commissions" : "Comisiones"
+};
+
+const scriptText = {
+  authDetect: isEn ? "Detecting referral code..." : "Detectando código de referido...",
+  codeDetected: isEn ? "Code detected" : "Código detectado",
+  signinPrompt: isEn ? "Sign in to see your affiliate dashboard." : "Inicia sesión para ver tu panel de afiliado.",
+  create: isEn ? "Create account" : "Crear cuenta",
+  signin: isEn ? "Sign in" : "Iniciar sesión",
+  creating: isEn ? "Creating account..." : "Creando cuenta...",
+  signingIn: isEn ? "Signing in..." : "Iniciando sesión...",
+  createdConfirm: isEn ? "Account created. Confirm your email and sign in to apply the code." : "Cuenta creada. Confirma tu email e inicia sesión para aplicar el código.",
+  sessionClosed: isEn ? "Session closed." : "Sesión cerrada.",
+  dashboardReady: isEn ? "Dashboard ready." : "Dashboard listo.",
+  dashboardUpdated: isEn ? "Dashboard updated." : "Dashboard actualizado.",
+  noProfile: isEn ? "Affiliate profile could not be loaded." : "No se pudo cargar perfil de afiliado.",
+  noMoves: isEn ? "No activity yet." : "Sin movimientos todavía.",
+  copiedCode: isEn ? "Code copied." : "Código copiado.",
+  copiedLink: isEn ? "Link copied." : "Link copiado.",
+  copyFail: isEn ? "Could not copy." : "No se pudo copiar.",
+  savingPayout: isEn ? "Saving payout details..." : "Guardando datos de pago...",
+  savedPayout: isEn ? "Payout details saved." : "Datos de pago guardados.",
+  saveFail: isEn ? "Could not save." : "No se pudo guardar.",
+  invoiceFail: isEn ? "Could not generate invoice." : "No se pudo generar invoice.",
+  profileFirst: isEn ? "Load your profile before reporting a sale." : "Carga tu perfil antes de reportar venta.",
+  invalidAmount: isEn ? "Invalid amount." : "Monto inválido.",
+  creatingOrder: isEn ? "Creating pending sale..." : "Creando venta pendiente...",
+  orderNotified: isEn ? "Sale sent for review and Discord notified." : "Venta enviada a revisión y Discord notificado.",
+  orderSaved: isEn ? "Sale saved. Discord did not confirm notification." : "Venta guardada. Discord no confirmó notificación.",
+  orderFail: isEn ? "Could not create the sale." : "No se pudo crear la venta.",
+  commissionNote: isEn ? "Commission is calculated, but it is not created until an admin approves." : "La comisión se calcula, pero no se crea hasta que admin apruebe.",
+  active: isEn ? "Active" : "Activo",
+  suspended: isEn ? "Suspended" : "Suspendido",
+  banned: isEn ? "Banned" : "Baneado",
+  pendingReview: isEn ? "Pending" : "Pendiente",
+  approved: isEn ? "Approved" : "Aprobada",
+  rejected: isEn ? "Rejected" : "Rechazada",
+  cancelled: isEn ? "Cancelled" : "Cancelada",
+  pending: isEn ? "Pending payment" : "Pendiente de pago",
+  paid: isEn ? "Paid" : "Pagada",
+  registered: isEn ? "Registered" : "Registrado",
+  converted: isEn ? "Converted" : "Convertido",
+  selfReferral: isEn ? "You cannot use your own code." : "No puedes usar tu propio código.",
+  alreadyAffiliate: isEn ? "Your user already has an assigned affiliate." : "Tu usuario ya tiene un afiliado asignado.",
+  codeApplied: isEn ? "Code applied successfully." : "Código aplicado correctamente.",
+  codeApplyFail: isEn ? "Could not apply the code" : "No se pudo aplicar el código",
+  loadFail: isEn ? "Could not load the account." : "No se pudo cargar la cuenta.",
+  locale
+};
+---
+
+<section class="section affiliateAccount">
+  <div class="container affiliateShell">
+    <header class="affiliateHero" data-reveal>
+      <div>
+        <div class="pill">{t.heroKicker}</div>
+        <h1 class="h1">{t.heroTitle}</h1>
+        <p class="muted">{t.heroText}</p>
+        <div class="cta">
+          <a class="btn btn-primary" href={getWhatsAppLink("cuenta", locale)} target="_blank" rel="noreferrer">{t.whatsapp}</a>
+          <a class="btn" href={`${routeFor("contacto", locale)}#brief-builder`}>{t.guidedBrief}</a>
+        </div>
+      </div>
+      <div class="heroStats" aria-label={t.heroKicker}>
+        {t.heroStats.map((item) => <span>{item}</span>)}
+      </div>
+    </header>
+
+    {!hasSupabase ? (
+      <div class="glass card warningPanel" data-reveal>
+        <span class="eyebrow">{t.accessKicker}</span>
+        <h2 class="h2">{t.configTitle}</h2>
+        <p class="muted">{t.configBody}</p>
+        <div class="cta">
+          <a class="btn btn-primary" href={getWhatsAppLink("cuenta", locale)} target="_blank" rel="noreferrer">{t.whatsapp}</a>
+          <a class="btn" href={`${routeFor("contacto", locale)}#brief-builder`}>{t.guidedBrief}</a>
+        </div>
+      </div>
+    ) : (
+      <>
+        <section class="affiliateGrid two">
+          <form class="glass card authPanel" data-auth-form data-reveal>
+            <div class="panelHead">
+              <div>
+                <span class="eyebrow">{t.accessKicker}</span>
+                <h2>{t.accountTitle}</h2>
+              </div>
+              <div class="segmented" role="tablist">
+                <button type="button" class="isActive" data-auth-mode="signin">{t.signin}</button>
+                <button type="button" data-auth-mode="signup">{t.signup}</button>
+              </div>
+            </div>
+
+            <p class="status" data-auth-status>{scriptText.authDetect}</p>
+
+            <label class="field">
+              <span>{t.email}</span>
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+
+            <label class="field" data-username-wrap hidden>
+              <span>{t.username}</span>
+              <input name="username" type="text" autocomplete="username" maxlength="24" />
+            </label>
+
+            <label class="field" data-invite-wrap>
+              <span>{t.invite}</span>
+              <input name="invite_code" type="text" autocomplete="off" maxlength="32" placeholder="VEX-MIKE-4821" />
+            </label>
+
+            <label class="field">
+              <span>{t.password}</span>
+              <input name="password" type="password" autocomplete="current-password" minlength="8" required />
+            </label>
+
+            <div class="actions">
+              <button class="btn btn-primary" type="submit" data-auth-submit>{t.continue}</button>
+              <button class="btn" type="button" data-logout hidden>{t.logout}</button>
+            </div>
+          </form>
+
+          <aside class="glass card" data-reveal>
+            <div class="panelHead">
+              <div>
+                <span class="eyebrow">{t.statusKicker}</span>
+                <h2>{t.rulesTitle}</h2>
+              </div>
+            </div>
+            <ul class="rules">
+              {t.rules.map((rule) => <li>{rule}</li>)}
+            </ul>
+          </aside>
+        </section>
+
+        <section class="dashboard" data-dashboard hidden>
+          <div class="affiliateGrid four">
+            {t.metrics.map((metric, index) => (
+              <article class="glass metric">
+                <span>{metric}</span>
+                <strong data-balance={index === 0 ? true : undefined} data-lifetime={index === 1 ? true : undefined} data-referrals-count={index === 2 ? true : undefined} data-orders-pending={index === 3 ? true : undefined}>{index < 2 ? "$0 MXN" : "0"}</strong>
+              </article>
+            ))}
+          </div>
+
+          <section class="affiliateGrid two">
+            <div class="glass card">
+              <div class="panelHead">
+                <div>
+                  <span class="eyebrow">{t.shareKicker}</span>
+                  <h2>{t.affiliateLink}</h2>
+                </div>
+                <span class="badge active" data-profile-status>{scriptText.active}</span>
+              </div>
+
+              <label class="field">
+                <span>{t.code}</span>
+                <div class="copyRow">
+                  <input data-invite-code readonly />
+                  <button class="btn" type="button" data-copy-code>{t.copy}</button>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>{t.link}</span>
+                <div class="copyRow">
+                  <input data-invite-link readonly />
+                  <button class="btn" type="button" data-copy-link>{t.copy}</button>
+                </div>
+              </label>
+
+              <div class="affiliateGrid two compact">
+                <label class="field">
+                  <span>{t.payoutEmail}</span>
+                  <input data-payout-email type="email" placeholder="payments@domain.com" />
+                </label>
+                <label class="field">
+                  <span>{t.payoutMethod}</span>
+                  <input data-payout-method type="text" placeholder={t.payoutPlaceholder} />
+                </label>
+              </div>
+              <button class="btn btn-primary" type="button" data-save-payout>{t.savePayout}</button>
+              <p class="status" data-affiliate-status>{scriptText.dashboardReady}</p>
+            </div>
+
+            <form class="glass card" data-order-form>
+              <div class="panelHead">
+                <div>
+                  <span class="eyebrow">{t.saleKicker}</span>
+                  <h2>{t.saleTitle}</h2>
+                </div>
+                <button class="btn" type="button" data-generate-invoice>{t.generateInvoice}</button>
+              </div>
+
+              <div class="affiliateGrid two compact">
+                <label class="field">
+                  <span>{t.invoiceId}</span>
+                  <input name="invoice_id" type="text" placeholder="VEX-20260531-0001" required />
+                </label>
+                <label class="field">
+                  <span>{t.amount}</span>
+                  <input name="amount_mxn" type="number" min="1" step="0.01" required />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>{t.soldService}</span>
+                <select name="service_name" required>
+                  <option value="">{t.selectService}</option>
+                  {t.services.map((service) => <option>{service}</option>)}
+                </select>
+              </label>
+
+              <div class="affiliateGrid two compact">
+                <label class="field">
+                  <span>{t.customer}</span>
+                  <input name="customer_name" type="text" />
+                </label>
+                <label class="field">
+                  <span>{t.contact}</span>
+                  <input name="customer_contact" type="text" placeholder={t.contactPlaceholder} />
+                </label>
+              </div>
+
+              <div class="affiliateGrid two compact">
+                <label class="field">
+                  <span>{t.customerEmail}</span>
+                  <input name="customer_email" type="email" />
+                </label>
+                <label class="field">
+                  <span>{t.paymentMethod}</span>
+                  <input name="payment_method" type="text" placeholder={isEn ? "Bank transfer" : "Transferencia"} />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>{t.proofUrl}</span>
+                <input name="proof_url" type="url" />
+              </label>
+
+              <label class="field">
+                <span>{t.notes}</span>
+                <textarea name="notes" rows="3"></textarea>
+              </label>
+
+              <button class="btn btn-primary" type="submit">{t.submitReview}</button>
+              <p class="status" data-order-status>{scriptText.commissionNote}</p>
+            </form>
+          </section>
+
+          <section class="affiliateGrid three">
+            <div class="glass card">
+              <div class="panelHead"><h2>{t.referralsTitle}</h2></div>
+              <ul class="list" data-referrals></ul>
+            </div>
+            <div class="glass card">
+              <div class="panelHead"><h2>{t.ordersTitle}</h2></div>
+              <ul class="list" data-orders></ul>
+            </div>
+            <div class="glass card">
+              <div class="panelHead"><h2>{t.commissionsTitle}</h2></div>
+              <ul class="list" data-commissions></ul>
+            </div>
+          </section>
+        </section>
+      </>
+    )}
+  </div>
+</section>
+
+<script is:inline define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, copy: scriptText }}>
+  (() => {
+    const AUTH_KEY = "vexora_auth_v1";
+    const LEGACY_AUTH_KEY = "vexora_auth_v2";
+    const PENDING_INVITE_KEY = "vexora_pending_invite_v1";
+    const LEGACY_PENDING_INVITE_KEY = "vexora_pending_invite_v2";
+    let mode = "signin";
+    let profile = null;
+
+    const $ = (s, root = document) => root.querySelector(s);
+    const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+
+    const authForm = $("[data-auth-form]");
+    const dashboard = $("[data-dashboard]");
+    const authStatus = $("[data-auth-status]");
+    const affiliateStatus = $("[data-affiliate-status]");
+    const orderStatus = $("[data-order-status]");
+    const dateLocale = copy.locale === "en" ? "en-US" : "es-MX";
+
+    if (!authForm) return;
+
+    function setText(el, text){ if(el) el.textContent = text; }
+    function money(cents, currency = "MXN"){
+      return new Intl.NumberFormat(dateLocale, { style: "currency", currency }).format(Number(cents || 0) / 100);
+    }
+    function date(v){
+      if(!v) return "-";
+      const d = new Date(v);
+      return Number.isNaN(d.getTime()) ? "-" : new Intl.DateTimeFormat(dateLocale, { dateStyle:"short", timeStyle:"short" }).format(d);
+    }
+    function normalizeInvite(v){ return String(v || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32); }
+    function normalizeInvoice(v){ return String(v || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24); }
+    function readJson(key){ try { return JSON.parse(localStorage.getItem(key) || "null"); } catch { return null; } }
+    function session(){
+      const current = readJson(AUTH_KEY);
+      if(current) return current;
+      const legacy = readJson(LEGACY_AUTH_KEY);
+      if(legacy) saveSession(legacy);
+      return legacy;
+    }
+    function saveSession(s){
+      localStorage.setItem(AUTH_KEY, JSON.stringify(s));
+      localStorage.setItem(LEGACY_AUTH_KEY, JSON.stringify(s));
+    }
+    function clearSession(){
+      localStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(LEGACY_AUTH_KEY);
+    }
+    function savePendingInvite(code){
+      const safe = normalizeInvite(code);
+      if(!safe) return;
+      localStorage.setItem(PENDING_INVITE_KEY, safe);
+      localStorage.setItem(LEGACY_PENDING_INVITE_KEY, safe);
+    }
+    function readPendingInvite(){
+      return normalizeInvite(localStorage.getItem(PENDING_INVITE_KEY) || localStorage.getItem(LEGACY_PENDING_INVITE_KEY) || "");
+    }
+    function clearPendingInvite(){
+      localStorage.removeItem(PENDING_INVITE_KEY);
+      localStorage.removeItem(LEGACY_PENDING_INVITE_KEY);
+    }
+
+    async function api(path, opts = {}){
+      const headers = Object.assign({
+        apikey: SUPABASE_ANON_KEY,
+        authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "content-type": "application/json"
+      }, opts.headers || {});
+      const res = await fetch(`${SUPABASE_URL}${path}`, Object.assign({}, opts, { headers }));
+      const data = await res.json().catch(() => null);
+      if(!res.ok){
+        throw new Error(data?.message || data?.msg || data?.error_description || data?.error || `Error ${res.status}`);
+      }
+      return data;
+    }
+    function authHeaders(){ return { authorization: `Bearer ${session()?.access_token || ""}` }; }
+    async function rpc(name, body = {}){ return api(`/rest/v1/rpc/${name}`, { method:"POST", headers: authHeaders(), body: JSON.stringify(body) }); }
+    async function signIn(email, password){ return api("/auth/v1/token?grant_type=password", { method:"POST", body: JSON.stringify({ email, password }) }); }
+    async function signUp(email, password, username){ return api("/auth/v1/signup", { method:"POST", body: JSON.stringify({ email, password, data: { username } }) }); }
+    async function refreshSession(){
+      const s = session();
+      if(!s?.refresh_token) return s;
+      const exp = Number(s.expires_at || 0);
+      const now = Math.floor(Date.now() / 1000);
+      if(exp && now < exp - 45) return s;
+      try {
+        const out = await api("/auth/v1/token?grant_type=refresh_token", { method:"POST", body: JSON.stringify({ refresh_token: s.refresh_token }) });
+        saveAuth(out, s.email, s.username);
+        return session();
+      } catch {
+        clearSession();
+        return null;
+      }
+    }
+    function saveAuth(out, email, fallbackUsername = ""){
+      const user = out?.user || out?.session?.user || {};
+      const access = out?.access_token || out?.session?.access_token || "";
+      const refresh = out?.refresh_token || out?.session?.refresh_token || "";
+      const expiresIn = Number(out?.expires_in || out?.session?.expires_in || 0);
+      saveSession({
+        user_id: user.id || "",
+        email: user.email || email || "",
+        username: user?.user_metadata?.username || fallbackUsername || "",
+        access_token: access,
+        refresh_token: refresh,
+        expires_at: expiresIn ? Math.floor(Date.now() / 1000) + expiresIn : 0
+      });
+    }
+
+    function captureInvite(){
+      const url = new URL(window.location.href);
+      const fromUrl = normalizeInvite(url.searchParams.get("ref"));
+      if(fromUrl) savePendingInvite(fromUrl);
+      const field = authForm?.elements?.invite_code;
+      const pending = fromUrl || readPendingInvite();
+      if(field && pending) field.value = pending;
+      if(pending) setText(authStatus, `${copy.codeDetected}: ${pending}.`);
+    }
+
+    async function claimPendingInvite(){
+      const code = normalizeInvite(authForm?.elements?.invite_code?.value || readPendingInvite());
+      if(!code) return;
+      try {
+        await rpc("claim_referral_code", { p_invite_code: code });
+        clearPendingInvite();
+        if(authForm?.elements?.invite_code) authForm.elements.invite_code.value = "";
+        setText(authStatus, `${copy.codeApplied}: ${code}.`);
+      } catch (err) {
+        const msg = String(err?.message || "");
+        if(/Self referral/i.test(msg)){
+          clearPendingInvite();
+          setText(authStatus, copy.selfReferral);
+        } else if(/already has an affiliate/i.test(msg) || /already assigned/i.test(msg)){
+          clearPendingInvite();
+          setText(authStatus, copy.alreadyAffiliate);
+        } else {
+          setText(authStatus, `${copy.codeApplyFail}: ${msg}`);
+        }
+      }
+    }
+
+    async function loadDashboard(){
+      const s = await refreshSession();
+      const logged = Boolean(s?.access_token && s?.user_id);
+      $("[data-logout]").hidden = !logged;
+      if(!dashboard) return;
+      dashboard.hidden = !logged;
+      if(!logged){
+        setText(authStatus, copy.signinPrompt);
+        return;
+      }
+
+      await rpc("ensure_affiliate_profile");
+      await claimPendingInvite();
+
+      const [profiles, referrals, orders, commissions] = await Promise.all([
+        api("/rest/v1/affiliate_profiles?select=*&limit=1", { headers: authHeaders() }),
+        api("/rest/v1/affiliate_referrals?select=*&order=created_at.desc&limit=20", { headers: authHeaders() }),
+        api("/rest/v1/affiliate_orders?select=*&order=created_at.desc&limit=20", { headers: authHeaders() }),
+        api("/rest/v1/affiliate_commissions?select=*&order=created_at.desc&limit=20", { headers: authHeaders() })
+      ]);
+
+      profile = Array.isArray(profiles) ? profiles[0] : profiles;
+      if(!profile) throw new Error(copy.noProfile);
+
+      $("[data-invite-code]").value = profile.invite_code || "";
+      $("[data-invite-link]").value = `${SITE_URL}/${copy.locale === "en" ? "en/account" : "cuenta"}/?ref=${encodeURIComponent(profile.invite_code || "")}`;
+      $("[data-payout-email]").value = profile.payout_email || s.email || "";
+      $("[data-payout-method]").value = profile.payout_method || "";
+      setText($("[data-balance]"), money(profile.referral_balance_cents));
+      setText($("[data-lifetime]"), money(profile.lifetime_earned_cents));
+      setText($("[data-referrals-count]"), String(referrals.length));
+      setText($("[data-orders-pending]"), String(orders.filter((o) => o.status === "pending_review").length));
+      const badge = $("[data-profile-status]");
+      badge.className = `badge ${profile.status || "active"}`;
+      badge.textContent = statusLabel(profile.status || "active");
+
+      renderList("[data-referrals]", referrals, (x) => `${short(x.referred_user_id)} · ${statusLabel(x.status)} · ${date(x.created_at)}`);
+      renderList("[data-orders]", orders, (x) => `${x.invoice_id} · ${money(x.amount_cents, x.currency)} · ${statusLabel(x.status)}`);
+      renderList("[data-commissions]", commissions, (x) => `${x.invoice_id} · ${money(x.commission_cents, x.currency)} · ${statusLabel(x.status)}`);
+      setText(affiliateStatus, copy.dashboardUpdated);
+    }
+
+    function renderList(selector, items, map){
+      const list = $(selector);
+      if(!list) return;
+      list.innerHTML = "";
+      if(!items.length){
+        const li = document.createElement("li");
+        li.textContent = copy.noMoves;
+        list.appendChild(li);
+        return;
+      }
+      for(const item of items){
+        const li = document.createElement("li");
+        li.textContent = map(item);
+        list.appendChild(li);
+      }
+    }
+    function short(v){ const s = String(v || "-"); return s.length > 12 ? `${s.slice(0, 6)}...${s.slice(-4)}` : s; }
+    function statusLabel(v){
+      return ({
+        pending_review: copy.pendingReview,
+        approved: copy.approved,
+        rejected: copy.rejected,
+        cancelled: copy.cancelled,
+        pending: copy.pending,
+        paid: copy.paid,
+        active: copy.active,
+        suspended: copy.suspended,
+        banned: copy.banned,
+        registered: copy.registered,
+        converted: copy.converted
+      })[String(v || "")] || v || "-";
+    }
+    async function copyToClipboard(value){
+      try { await navigator.clipboard.writeText(String(value || "")); return true; } catch { return false; }
+    }
+
+    $$("[data-auth-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        mode = btn.dataset.authMode;
+        $$("[data-auth-mode]").forEach((x) => classListToggle(x, "isActive", x === btn));
+        $("[data-username-wrap]").hidden = mode !== "signup";
+        $("[data-auth-submit]").textContent = mode === "signup" ? copy.create : copy.signin;
+      });
+    });
+    function classListToggle(el, cls, on){ if(el) el.classList.toggle(cls, on); }
+
+    authForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const email = String(form.elements.email.value || "").trim();
+      const password = String(form.elements.password.value || "");
+      const username = String(form.elements.username?.value || "").trim();
+      const invite = normalizeInvite(form.elements.invite_code?.value || "");
+      if(invite) savePendingInvite(invite);
+      setText(authStatus, mode === "signup" ? copy.creating : copy.signingIn);
+      try {
+        const out = mode === "signup" ? await signUp(email, password, username) : await signIn(email, password);
+        if(out?.session || out?.access_token){
+          saveAuth(out, email, username);
+          await loadDashboard();
+        } else {
+          setText(authStatus, copy.createdConfirm);
+        }
+      } catch (err) {
+        setText(authStatus, err?.message || copy.loadFail);
+      }
+    });
+
+    $("[data-logout]")?.addEventListener("click", () => {
+      clearSession();
+      dashboard.hidden = true;
+      setText(authStatus, copy.sessionClosed);
+    });
+    $("[data-copy-code]")?.addEventListener("click", async () => setText(affiliateStatus, await copyToClipboard($("[data-invite-code]").value) ? copy.copiedCode : copy.copyFail));
+    $("[data-copy-link]")?.addEventListener("click", async () => setText(affiliateStatus, await copyToClipboard($("[data-invite-link]").value) ? copy.copiedLink : copy.copyFail));
+    $("[data-save-payout]")?.addEventListener("click", async () => {
+      const s = session();
+      if(!s?.user_id) return;
+      setText(affiliateStatus, copy.savingPayout);
+      try {
+        await api(`/rest/v1/affiliate_profiles?user_id=eq.${encodeURIComponent(s.user_id)}`, {
+          method:"PATCH",
+          headers: Object.assign(authHeaders(), { Prefer:"return=minimal" }),
+          body: JSON.stringify({
+            payout_email: String($("[data-payout-email]").value || "").trim() || null,
+            payout_method: String($("[data-payout-method]").value || "").trim() || null
+          })
+        });
+        setText(affiliateStatus, copy.savedPayout);
+      } catch (err) {
+        setText(affiliateStatus, err?.message || copy.saveFail);
+      }
+    });
+    $("[data-generate-invoice]")?.addEventListener("click", async () => {
+      try {
+        const invoice = await rpc("generate_invoice_id", {});
+        $("[data-order-form]").elements.invoice_id.value = normalizeInvoice(invoice);
+      } catch (err) {
+        setText(orderStatus, err?.message || copy.invoiceFail);
+      }
+    });
+    $("[data-order-form]")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if(!profile?.invite_code) return setText(orderStatus, copy.profileFirst);
+      const form = new FormData(event.currentTarget);
+      const amount = Number(String(form.get("amount_mxn") || "0").replace(",", "."));
+      if(!Number.isFinite(amount) || amount <= 0) return setText(orderStatus, copy.invalidAmount);
+      setText(orderStatus, copy.creatingOrder);
+      try {
+        const out = await rpc("create_affiliate_order", {
+          p_invite_code: profile.invite_code,
+          p_invoice_id: normalizeInvoice(form.get("invoice_id")),
+          p_customer_name: String(form.get("customer_name") || ""),
+          p_customer_contact: String(form.get("customer_contact") || ""),
+          p_customer_email: String(form.get("customer_email") || ""),
+          p_service_name: String(form.get("service_name") || ""),
+          p_amount_cents: Math.round(amount * 100),
+          p_currency: "MXN",
+          p_payment_method: String(form.get("payment_method") || ""),
+          p_proof_url: String(form.get("proof_url") || ""),
+          p_notes: String(form.get("notes") || "")
+        });
+        const notify = await fetch("/api/affiliate/order-created", {
+          method: "POST",
+          headers: { "content-type":"application/json", authorization: `Bearer ${session()?.access_token || ""}` },
+          body: JSON.stringify({ order_id: out?.order_id })
+        }).then((r) => r.json()).catch(() => ({ notification_sent:false }));
+        event.currentTarget.reset();
+        setText(orderStatus, notify?.notification_sent ? copy.orderNotified : copy.orderSaved);
+        await loadDashboard();
+      } catch (err) {
+        setText(orderStatus, err?.message || copy.orderFail);
+      }
+    });
+
+    captureInvite();
+    loadDashboard().catch((err) => setText(authStatus, err?.message || copy.loadFail));
+  })();
+</script>
+
+<style>
+  .affiliateShell{display:grid;gap:var(--s-5)}
+  .affiliateHero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);gap:var(--s-5);align-items:end}
+  .affiliateHero .h1{margin-top:14px;max-width:900px}
+  .affiliateHero p{max-width:74ch;line-height:1.7;margin:14px 0 0}
+  .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .heroStats{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+  .heroStats span,.badge{
+    border:1px solid var(--stroke);
+    background:rgba(255,255,255,.04);
+    border-radius:999px;
+    padding:8px 12px;
+    color:var(--faint);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    font-size:13px;
+  }
+  .affiliateGrid{display:grid;gap:var(--s-4)}
+  .two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .four{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .compact{gap:var(--s-3)}
+  .dashboard{display:grid;gap:var(--s-4)}
+  .panelHead{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s-3);margin-bottom:var(--s-3)}
+  .panelHead h2,.card h2{font-family:var(--font-display);font-size:22px;line-height:1.16;margin:4px 0 0;letter-spacing:0}
+  .eyebrow{font-size:12px;text-transform:uppercase;color:var(--accent-1);letter-spacing:.12em;font-weight:700}
+  .metric{padding:var(--s-4);border:1px solid var(--stroke);border-radius:var(--r-2)}
+  .metric span,.field span,.status,.rules,.list{color:var(--muted)}
+  .metric strong{display:block;margin-top:8px;font-size:clamp(22px,2vw,28px);color:var(--text);font-family:var(--font-display)}
+  .field{display:grid;gap:8px;margin-top:var(--s-3)}
+  .field input,.field textarea,.field select{
+    width:100%;
+    border-radius:var(--r-1);
+    border:1px solid var(--stroke);
+    background:rgba(0,0,0,.18);
+    padding:12px;
+    color:var(--text);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+  .field textarea{resize:vertical}
+  .copyRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--s-4)}
+  .segmented{display:flex;gap:4px;background:rgba(0,0,0,.18);border:1px solid var(--stroke);border-radius:999px;padding:4px}
+  .segmented button{
+    border:0;
+    border-radius:999px;
+    padding:9px 12px;
+    background:transparent;
+    color:var(--faint);
+    cursor:pointer;
+    font-weight:600;
+  }
+  .segmented .isActive{
+    color:var(--text);
+    background:linear-gradient(180deg, rgba(139,92,255,.28), rgba(139,92,255,.12));
+    box-shadow:var(--glow);
+  }
+  .rules,.list{display:grid;gap:10px;padding-left:18px;line-height:1.55}
+  .list{list-style:none;padding-left:0;margin:0}
+  .list li{border-top:1px solid rgba(255,255,255,.09);padding:10px 0;color:var(--faint)}
+  .badge.pending_review,.badge.pending{color:#fde68a;border-color:rgba(253,230,138,.35)}
+  .badge.approved,.badge.active{color:#86efac;border-color:rgba(134,239,172,.35)}
+  .badge.rejected,.badge.banned{color:#fca5a5;border-color:rgba(252,165,165,.35)}
+  .badge.paid{color:#93c5fd;border-color:rgba(147,197,253,.35)}
+  .warningPanel{max-width:820px}
+  .warningPanel .h2{margin-top:8px}
+  .warningPanel p{line-height:1.65}
+  @media (max-width:960px){
+    .affiliateHero,.two,.three,.four{grid-template-columns:1fr}
+    .heroStats{justify-content:flex-start}
+  }
+  @media (max-width:560px){
+    .copyRow{grid-template-columns:1fr}
+    .panelHead{display:grid}
+    .segmented{width:100%}
+    .segmented button{flex:1}
+  }
+</style>
