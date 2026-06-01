@@ -1,0 +1,104 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ServicesExplorer from "@/components/ServicesExplorer.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+---
+<BaseLayout
+  page="servicios"
+  title={`Services — ${BRAND}`}
+  description="Premium services: web/UI-UX, Discord, Minecraft, automations, and WhatsApp + AI with compliant integrations. Clear deliverables, performance, and security."
+  canonicalPath="/en/services/"
+>
+  <section class="section">
+    <div class="container">
+      <div class="head glass card" data-reveal>
+        <div>
+          <div class="pill">Services</div>
+          <h1 class="h1" style="margin-top:14px;">Systems you can operate without friction.</h1>
+          <p class="muted" style="margin:12px 0 0; max-width:70ch;">
+            No fluff: we define scope, deliverables, and checklists. We design for security, clarity, and performance.
+            If it crosses the line (hacks, spam, unauthorized access), we don’t do it.
+          </p>
+        </div>
+        <div class="head__cta">
+          <a class="btn btn-primary" href={getWhatsAppLink("servicios", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+          <a class="btn" href={routeFor("precios", "en")}>View packages</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <ServicesExplorer page="servicios" />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Differentiators</h2>
+        <ul class="list">
+          <li><strong>Product precision:</strong> goals, constraints, and traceable decisions.</li>
+          <li><strong>Low-noise UX:</strong> hierarchy, rhythm, micro-interactions, accessibility.</li>
+          <li><strong>Engineering-first:</strong> performance, basic security, logs, backups.</li>
+          <li><strong>Real handoff:</strong> runbook, checklist, ownership, optional support.</li>
+        </ul>
+      </div>
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Typical timelines</h2>
+        <div class="timeline">
+          <div class="tItem">
+            <div class="tItem__k">Premium website</div>
+            <div class="muted">10–18 business days depending on pages and integrations.</div>
+          </div>
+          <div class="tItem">
+            <div class="tItem__k">Discord / Minecraft</div>
+            <div class="muted">7–14 business days depending on complexity and hardening.</div>
+          </div>
+          <div class="tItem">
+            <div class="tItem__k">WhatsApp + AI</div>
+            <div class="muted">Depends on approvals and provider (official API). Typical: 2–4 weeks.</div>
+          </div>
+          <div class="tItem">
+            <div class="tItem__k">Automations</div>
+            <div class="muted">From 1 week for a single flow, up to 4+ for multi-channel ops.</div>
+          </div>
+        </div>
+        <div class="note muted small">
+          For higher-risk projects (migrations, large communities), we propose stages to avoid downtime.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 10px 0; }
+    .timeline{
+      margin-top: 12px;
+      display:grid;
+      gap:10px;
+    }
+    .tItem{
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+    }
+    .tItem__k{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .small{ font-size: 13px; }
+    .note{ margin-top: 12px; }
+  </style>
+</BaseLayout>
+

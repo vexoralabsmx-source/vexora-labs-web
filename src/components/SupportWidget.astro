@@ -1,0 +1,557 @@
+---
+import type { Locale } from "@/lib/i18n";
+import { localeFromPath } from "@/lib/i18n";
+import type { PageKey } from "@/lib/whatsapp";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+import { getSupportKB } from "@/lib/support";
+
+type Props = { page: PageKey; locale?: Locale };
+const { page, locale: propLocale } = Astro.props;
+const locale = propLocale ?? localeFromPath(Astro.url.pathname);
+
+const KB = getSupportKB(locale);
+const wa = getWhatsAppLink(page, locale);
+const AI_ENABLED = String(import.meta.env.PUBLIC_AI_ENABLED ?? "").trim() === "true";
+const AI_ENDPOINT = String(import.meta.env.PUBLIC_AI_ENDPOINT ?? "/.netlify/functions/ai").trim();
+
+const t = {
+  open: locale === "en" ? "Open support" : "Abrir soporte",
+  close: locale === "en" ? "Close" : "Cerrar",
+  title: KB.title,
+  intro: KB.intro,
+  placeholder: locale === "en" ? "Type your question (e.g. pricing, timeline, hosting)…" : "Escribe tu duda (ej. precios, tiempos, hosting)…",
+  send: locale === "en" ? "Send" : "Enviar",
+  typing: locale === "en" ? "Typing…" : "Escribiendo…",
+  hiAsk:
+    locale === "en"
+      ? "Hi! What do you want to solve today? (pricing, timeline, hosting, support)"
+      : "Hola 👋 ¿Qué quieres resolver hoy? (precios, tiempos, hosting, soporte)",
+  thanks:
+    locale === "en"
+      ? "You’re welcome. If you share context, I can point you to the right option."
+      : "Con gusto. Si me das contexto, te digo la mejor opción.",
+  bye: locale === "en" ? "Got it. See you soon." : "Listo. Aquí estaré por si necesitas algo.",
+  couponTitle: locale === "en" ? "Nice. Here’s a coupon:" : "Nice. Aquí tienes un cupón:",
+  couponAlready: locale === "en" ? "You already claimed the coupon on this device." : "Ya reclamaste el cupón en este dispositivo.",
+  couponHint:
+    locale === "en"
+      ? "Tip: try the word “neon”."
+      : "Tip: prueba con la palabra “neon”.",
+  noMatchTitle: locale === "en" ? "I couldn't find an exact match." : "No encontré una respuesta exacta.",
+  noMatchBody:
+    locale === "en"
+      ? "Pick a suggested question or message us on WhatsApp with your context."
+      : "Elige una sugerencia o escríbenos por WhatsApp con tu contexto.",
+  noMatchBodyAi:
+    locale === "en"
+      ? "I can also try an AI answer (beta) if you share a bit of context."
+      : "También puedo intentar una respuesta con IA (beta) si me das un poco de contexto.",
+  aiFail:
+    locale === "en"
+      ? "AI is not available right now. Please message us on WhatsApp."
+      : "La IA no está disponible ahora. Por favor escribe por WhatsApp.",
+  contact: locale === "en" ? "Message on WhatsApp" : "Escribir por WhatsApp",
+  faq: "FAQ",
+  suggestions: locale === "en" ? "Suggestions" : "Sugerencias"
+};
+---
+
+<div class="support" data-support-root>
+  <button class="support__fab" type="button" aria-label={t.open} data-support-open>
+    <span class="support__fabIcon" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Z"
+          stroke="currentColor"
+          stroke-width="1.6"
+          opacity=".9"
+        />
+        <path
+          d="M8.6 9.2a3.5 3.5 0 1 1 5.3 3l-.9.6c-.7.5-1 1-1 2.2"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path d="M12 17.4h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </span>
+    <span class="support__fabText">{locale === "en" ? "Support" : "Soporte"}</span>
+  </button>
+
+  <div class="support__overlay" hidden data-support-overlay></div>
+
+  <aside class="support__panel glass" hidden data-support-panel aria-label={t.title}>
+    <div class="support__head">
+      <div>
+        <div class="support__title">{t.title}</div>
+        <div class="support__sub muted">{t.intro}</div>
+      </div>
+      <button class="support__close btn" type="button" aria-label={t.close} data-support-close>
+        {t.close}
+      </button>
+    </div>
+
+    <div class="support__quick" aria-label={t.suggestions}>
+      {KB.quickTopics.map((q) => (
+        <button class="support__chip" type="button" data-support-quick={q.query}>
+          {q.label}
+        </button>
+      ))}
+    </div>
+
+    <div class="support__chat" aria-live="polite" aria-relevant="additions" data-support-chat></div>
+
+    <form class="support__form" data-support-form>
+      <input class="support__input" name="q" type="text" placeholder={t.placeholder} autocomplete="off" data-support-input />
+      <button class="support__send btn btn-primary" type="submit">{t.send}</button>
+    </form>
+
+    <div class="support__actions">
+      <a class="btn" href={routeFor("faq", locale)}>{t.faq}</a>
+      <a class="btn btn-primary" href={wa} target="_blank" rel="noreferrer">{t.contact}</a>
+    </div>
+  </aside>
+</div>
+
+<script is:inline define:vars={{ STR: t, KB, WA: wa, AI: { enabled: AI_ENABLED, endpoint: AI_ENDPOINT } }}>
+  (function () {
+    const root = document.querySelector("[data-support-root]");
+    if (!root) return;
+
+    const btnOpen = root.querySelector("[data-support-open]");
+    const btnClose = root.querySelector("[data-support-close]");
+    const panel = root.querySelector("[data-support-panel]");
+    const overlay = root.querySelector("[data-support-overlay]");
+    const chat = root.querySelector("[data-support-chat]");
+    const form = root.querySelector("[data-support-form]");
+    const input = root.querySelector("[data-support-input]");
+    const quick = Array.from(root.querySelectorAll("[data-support-quick]"));
+
+    if (!btnOpen || !btnClose || !panel || !overlay || !chat || !form || !input) return;
+
+    const STORAGE_KEY = "vexora_support_open";
+    const COUPON_KEY = "vexora_coupon_claimed";
+    const STOP = new Set([
+      "de","la","el","los","las","y","o","que","para","con","sin","en","por","un","una","unos","unas","a",
+      "the","and","or","to","for","with","without","in","on","at","from","is","are","be","this","that"
+    ]);
+
+    const norm = (s) =>
+      String(s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\\u0300-\\u036f]/g, "")
+        .trim();
+
+    function hasAny(hay, needles) {
+      const h = norm(hay);
+      for (const n of needles || []) {
+        if (!n) continue;
+        if (h.includes(norm(n))) return true;
+      }
+      return false;
+    }
+
+    function tokens(q) {
+      return norm(q)
+        .split(/[^a-z0-9]+/g)
+        .filter(Boolean)
+        .filter((t) => t.length >= 3 && !STOP.has(t));
+    }
+
+    function score(query, entry) {
+      const hay = norm(entry.q + " " + (entry.keywords || []).join(" "));
+      const ts = tokens(query);
+      let s = 0;
+      for (const t of ts) if (hay.includes(t)) s++;
+      return s;
+    }
+
+    function bestMatches(query, limit = 3) {
+      const scored = (KB.entries || [])
+        .map((e) => ({ e, s: score(query, e) }))
+        .filter((x) => x.s > 0)
+        .sort((a, b) => b.s - a.s)
+        .slice(0, limit);
+      return scored.map((x) => x.e);
+    }
+
+    function el(tag, cls, text) {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text != null) n.textContent = text;
+      return n;
+    }
+
+    function pushMsg(kind, lines) {
+      const wrap = el("div", "msg " + (kind === "user" ? "msg--user" : "msg--bot"));
+      const bubble = el("div", "msg__bubble");
+      const arr = Array.isArray(lines) ? lines : [String(lines || "")];
+      for (const line of arr) {
+        bubble.appendChild(el("div", "msg__line", line));
+      }
+      wrap.appendChild(bubble);
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function pushTyping(delay = 260) {
+      const wrap = el("div", "msg msg--bot");
+      const bubble = el("div", "msg__bubble msg__bubble--typing");
+      bubble.appendChild(el("div", "msg__line muted", STR.typing));
+      wrap.appendChild(bubble);
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+      window.setTimeout(() => {
+        try { wrap.remove(); } catch {}
+      }, delay);
+    }
+
+    function pushTypingHold() {
+      const wrap = el("div", "msg msg--bot");
+      const bubble = el("div", "msg__bubble msg__bubble--typing");
+      bubble.appendChild(el("div", "msg__line muted", STR.typing));
+      wrap.appendChild(bubble);
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+      return wrap;
+    }
+
+    async function askAI(query) {
+      if (!AI || !AI.enabled || !AI.endpoint) return false;
+      const typing = pushTypingHold();
+      try {
+        const payload = {
+          q: String(query || "").slice(0, 2000),
+          page: document.body?.dataset?.page || "",
+          locale: document.body?.dataset?.locale || "",
+          utm: window.vexoraGetUTMs && typeof window.vexoraGetUTMs === "function" ? window.vexoraGetUTMs() : {}
+        };
+        const res = await fetch(AI.endpoint, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || "AI error");
+        const reply = String(data?.reply || "").trim();
+        if (reply) {
+          pushMsg("bot", reply);
+          try { window.vexoraTrack?.("ai_support_reply"); } catch {}
+          return true;
+        }
+      } catch {
+        pushMsg("bot", STR.aiFail);
+      } finally {
+        try { typing.remove(); } catch {}
+      }
+      return false;
+    }
+
+    function pushSuggestions(entries) {
+      if (!entries.length) return;
+      const wrap = el("div", "suggest");
+      wrap.appendChild(el("div", "suggest__title muted", STR.suggestions));
+      const row = el("div", "suggest__row");
+      for (const e of entries) {
+        const b = el("button", "support__chip", e.q);
+        b.type = "button";
+        b.addEventListener("click", () => answer(e.q));
+        row.appendChild(b);
+      }
+      wrap.appendChild(row);
+      chat.appendChild(wrap);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function pushCta() {
+      const row = el("div", "chatCta");
+      const a = document.createElement("a");
+      a.className = "btn btn-primary";
+      a.href = WA;
+      a.target = "_blank";
+      a.rel = "noreferrer";
+      a.textContent = STR.contact;
+      row.appendChild(a);
+      chat.appendChild(row);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function showCoupon() {
+      const c = KB.coupon;
+      if (!c) return false;
+
+      let claimed = false;
+      try { claimed = window.localStorage.getItem(COUPON_KEY) === "1"; } catch {}
+
+      if (claimed) {
+        pushTyping();
+        window.setTimeout(() => pushMsg("bot", [STR.couponAlready]), 260);
+        return true;
+      }
+
+      try { window.localStorage.setItem(COUPON_KEY, "1"); } catch {}
+      pushTyping();
+      window.setTimeout(() => {
+        pushMsg("bot", [STR.couponTitle, `${c.label}`, `CODE: ${c.code}`, ...(c.terms || [])]);
+        pushCta();
+      }, 260);
+      return true;
+    }
+
+    function isGreeting(q) {
+      return hasAny(q, ["hola", "buenas", "hey", "holi", "hello", "hi"]);
+    }
+    function isThanks(q) {
+      return hasAny(q, ["gracias", "thank you", "thanks", "thx"]);
+    }
+    function isBye(q) {
+      return hasAny(q, ["adios", "adiós", "bye", "hasta luego", "nos vemos"]);
+    }
+    function isCouponAsk(q) {
+      return hasAny(q, ["cupon", "cupón", "descuento", "discount", "coupon"]);
+    }
+    function isSecretWord(q) {
+      return hasAny(q, (KB.coupon && KB.coupon.secretWords) || []);
+    }
+
+    function answer(query) {
+      const q = String(query || "").trim();
+      if (!q) return;
+      pushMsg("user", q);
+
+      // Small-talk & promos (rules, not AI)
+      if (isSecretWord(q)) return void showCoupon();
+      if (isGreeting(q)) {
+        pushTyping();
+        return void window.setTimeout(() => pushMsg("bot", [STR.hiAsk]), 260);
+      }
+      if (isThanks(q)) {
+        pushTyping();
+        return void window.setTimeout(() => pushMsg("bot", [STR.thanks]), 260);
+      }
+      if (isBye(q)) {
+        pushTyping();
+        return void window.setTimeout(() => pushMsg("bot", [STR.bye]), 260);
+      }
+      if (isCouponAsk(q)) {
+        // Don't auto-claim: only if they know the secret word.
+        pushTyping();
+        return void window.setTimeout(() => pushMsg("bot", [STR.couponHint]), 260);
+      }
+
+      const matches = bestMatches(q, 3);
+      if (!matches.length) {
+        if (AI && AI.enabled) {
+          pushMsg("bot", [STR.noMatchTitle, STR.noMatchBodyAi]);
+          askAI(q);
+          pushCta();
+          return;
+        }
+        pushTyping();
+        pushMsg("bot", [STR.noMatchTitle, STR.noMatchBody]);
+        pushSuggestions((KB.entries || []).slice(0, 3));
+        pushCta();
+        return;
+      }
+
+      const top = matches[0];
+      pushTyping();
+      pushMsg("bot", [top.q, ...(top.a || [])]);
+      if (matches.length > 1) pushSuggestions(matches.slice(1));
+    }
+
+    function open() {
+      panel.hidden = false;
+      overlay.hidden = false;
+      root.classList.add("is-open");
+      window.localStorage.setItem(STORAGE_KEY, "1");
+      setTimeout(() => input.focus(), 0);
+    }
+
+    function close() {
+      root.classList.remove("is-open");
+      panel.hidden = true;
+      overlay.hidden = true;
+      window.localStorage.setItem(STORAGE_KEY, "0");
+    }
+
+    btnOpen.addEventListener("click", open);
+    btnClose.addEventListener("click", close);
+    overlay.addEventListener("click", close);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = input.value;
+      input.value = "";
+      answer(v);
+    });
+
+    for (const b of quick) {
+      b.addEventListener("click", () => answer(b.getAttribute("data-support-quick")));
+    }
+
+    // Initial message
+    pushMsg("bot", [STR.title, STR.intro]);
+
+    // Restore open state (optional)
+    try {
+      if (window.localStorage.getItem(STORAGE_KEY) === "1") open();
+    } catch {}
+  })();
+</script>
+
+<style>
+  .support{
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 60;
+  }
+
+  .support__fab{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-radius: 999px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: linear-gradient(180deg, rgba(139,92,255,.22), rgba(255,255,255,.04));
+    box-shadow: var(--glow);
+    cursor:pointer;
+    user-select:none;
+  }
+  .support__fab:hover{
+    border-color: rgba(106,228,255,.40);
+    transform: translateY(-1px);
+  }
+  .support__fab:active{ transform: none; }
+  .support__fabIcon{
+    width:34px; height:34px;
+    display:grid; place-items:center;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.14);
+  }
+  .support__fabText{
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .support__overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.36);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .support__panel{
+    position: fixed;
+    right: 18px;
+    bottom: 74px;
+    width: min(420px, calc(100vw - 24px));
+    border-radius: 22px;
+    padding: 16px;
+  }
+
+  .support__head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 10px;
+  }
+  .support__title{
+    font-family: var(--font-display);
+    font-weight: 650;
+    letter-spacing:-.02em;
+  }
+  .support__sub{ font-size: 13px; margin-top: 3px; }
+  .support__close{ padding: 10px 12px; }
+
+  .support__quick{
+    display:flex;
+    gap:10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .support__chip{
+    border-radius: 999px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.03);
+    cursor:pointer;
+    font-size: 13px;
+  }
+  .support__chip:hover{
+    border-color: rgba(255,255,255,.22);
+    background: rgba(255,255,255,.05);
+    transform: translateY(-1px);
+  }
+
+  .support__chat{
+    margin-top: 12px;
+    height: 260px;
+    overflow:auto;
+    border-radius: 18px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.12);
+    padding: 12px;
+  }
+
+  .msg{ display:flex; margin: 10px 0; }
+  .msg--user{ justify-content:flex-end; }
+  .msg--bot{ justify-content:flex-start; }
+  .msg__bubble{
+    max-width: 92%;
+    border-radius: 18px;
+    padding: 10px 12px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+  }
+  .msg--user .msg__bubble{
+    border-color: rgba(139,92,255,.26);
+    background: linear-gradient(180deg, rgba(139,92,255,.18), rgba(255,255,255,.03));
+  }
+  .msg__line{ font-size: 13px; line-height: 1.35; color: rgba(237,237,243,.92); }
+  .msg__line + .msg__line{ margin-top: 6px; color: rgba(237,237,243,.84); }
+
+  .suggest{ margin: 12px 0 6px; }
+  .suggest__title{ font-size: 12px; margin-bottom: 8px; }
+  .suggest__row{ display:flex; gap:10px; flex-wrap: wrap; }
+  .chatCta{ margin-top: 10px; display:flex; }
+
+  .support__form{
+    display:flex;
+    gap:10px;
+    margin-top: 10px;
+  }
+  .support__input{
+    flex: 1;
+    border-radius: 999px;
+    padding: 12px 14px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.14);
+  }
+  .support__send{ padding: 12px 14px; }
+
+  .support__actions{
+    margin-top: 10px;
+    display:flex;
+    gap:10px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 520px){
+    .support{ right: 12px; bottom: 12px; }
+    .support__panel{ right: 12px; bottom: 68px; }
+    .support__chat{ height: 220px; }
+    .support__fabText{ display:none; }
+  }
+</style>

@@ -1,0 +1,129 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+---
+<BaseLayout
+  page="web"
+  title={`Web premium / UI-UX — ${BRAND}`}
+  description="Landing y multipagina premium: UI limpia, copy de conversion, performance, accesibilidad y SEO tecnico. Build rapido, sin dependencias pesadas."
+  canonicalPath="/web-uiux/"
+>
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <div class="pill">Web / UI-UX</div>
+        <h1 class="h1" style="margin-top:14px;">Una web que se siente cara.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:72ch;">
+          Diseñamos y construimos experiencias premium con performance real: tipografia, ritmo, micro-interacciones y SEO
+          tecnico. Menos scripts. Mas control.
+        </p>
+        <div class="cta" data-reveal>
+          <a class="btn btn-primary" href={getWhatsAppLink("web")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+          <a class="btn" href="/portafolio/">Ver resultados</a>
+          <a class="btn" href="/precios/">Ver paquetes</a>
+        </div>
+        <div class="note muted small" data-reveal>
+          Esta web esta hecha con Astro + TypeScript y JS minimo para que cargue rapido (multi-pagina real).
+        </div>
+      </div>
+
+      <aside class="glass card" data-reveal>
+        <div class="h3">Incluye</div>
+        <ul class="list">
+          <li>UI system: tokens, componentes y consistencia.</li>
+          <li>Copy de conversion (ES-MX): pitch, beneficios, CTA y objeciones.</li>
+          <li>SEO tecnico: titles, metas, OG, sitemap/robots.</li>
+          <li>Accesibilidad: focus states, contraste y semantica.</li>
+          <li>Performance: imagenes, lazy loading y JS minimo.</li>
+          <li>Deploy: Netlify o Vercel con checklist.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card" data-reveal>
+      <div class="sectionHead">
+        <h2 class="h2">Engineering precision</h2>
+        <a class="btn btn-primary" href={getWhatsAppLink("web")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+      </div>
+      <div class="grid3">
+        <article class="mod" data-reveal>
+          <div class="mod__t">Arquitectura multipagina</div>
+          <p class="muted">Rutas reales, componentes reutilizables y head SEO por pagina.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Core Web Vitals</div>
+          <p class="muted">Carga rapida, menos JS, CSS eficiente y recursos optimizados.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Accesibilidad</div>
+          <p class="muted">Teclado, focus visible, semantica y patrones accesibles.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Conversion</div>
+          <p class="muted">Jerarquia, copy, secciones clave, prueba social y CTA por pagina.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Escalabilidad</div>
+          <p class="muted">Design tokens y componentes para crecer sin re-trabajo.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Handoff serio</div>
+          <p class="muted">Documentacion, checklist y guia de actualizaciones.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Estructura recomendada</h2>
+        <ul class="list">
+          <li><strong>Home:</strong> pitch claro, prueba social y CTA.</li>
+          <li><strong>Servicios:</strong> explorador y paginas por vertical.</li>
+          <li><strong>Portafolio:</strong> casos con metricas (sin marcas falsas).</li>
+          <li><strong>Precios:</strong> paquetes, comparador y custom.</li>
+          <li><strong>FAQ + Contacto:</strong> friccion cero para cerrar.</li>
+        </ul>
+      </div>
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Garantia de calidad</h2>
+        <ul class="list">
+          <li>Revisamos responsive real (mobile primero).</li>
+          <li>Titles y descripciones unicas por pagina.</li>
+          <li>OG tags listos para compartir.</li>
+          <li>Focus states visibles + contraste.</li>
+          <li>JS solo donde aporta (horarios, filtros, acordeones).</li>
+        </ul>
+        <div class="ctaBox">
+          <div>
+            <div class="ctaBox__t">Brief rapido</div>
+            <div class="muted small">Objetivo, audiencia, oferta, paginas y referencias.</div>
+          </div>
+          <a class="btn btn-primary" href={getWhatsAppLink("web")} target="_blank" rel="noreferrer">Escribir</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px; }
+    .small{ font-size: 13px; }
+    .note{ margin-top: 14px; }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 9px 0; }
+    .sectionHead{ display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom: 12px; }
+    .grid3{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+    .mod{ border-radius: 20px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); padding: 16px; }
+    .mod__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .ctaBox{ margin-top: 16px; padding: 14px; border-radius: 18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .ctaBox__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    @media (max-width: 980px){
+      .grid3{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

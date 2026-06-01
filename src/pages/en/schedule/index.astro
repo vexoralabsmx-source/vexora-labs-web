@@ -1,0 +1,127 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import HoursWidget from "@/components/HoursWidget.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+
+const RAW_EMBED_URL = (import.meta.env.PUBLIC_SCHEDULING_EMBED_URL ?? "").trim();
+const FALLBACK_URL = (import.meta.env.PUBLIC_SCHEDULING_FALLBACK_URL ?? "").trim();
+const RAW_PROVIDER = (import.meta.env.PUBLIC_SCHEDULING_PROVIDER ?? "").trim();
+const EMBED_URL = RAW_EMBED_URL || FALLBACK_URL;
+const guessProvider = (url: string) => {
+  const u = url.toLowerCase();
+  if (u.includes("calendly.com")) return "Calendly";
+  if (u.includes("cal.com")) return "Cal.com";
+  return "";
+};
+const PROVIDER = RAW_PROVIDER || guessProvider(FALLBACK_URL || RAW_EMBED_URL);
+const IS_CALENDLY =
+  PROVIDER.toLowerCase() === "calendly" ||
+  RAW_EMBED_URL.toLowerCase().includes("calendly.com") ||
+  FALLBACK_URL.toLowerCase().includes("calendly.com");
+const isDev = import.meta.env.DEV;
+---
+<BaseLayout
+  page="agenda"
+  title={`Schedule — ${BRAND}`}
+  description="Schedule a call. Cal.com/Calendly embed (if configured) + WhatsApp fallback."
+  canonicalPath="/en/schedule/"
+>
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <div class="pill">Schedule</div>
+        <h1 class="h1" style="margin-top:14px;">Let’s book 15–30 min.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:72ch;">
+          To move fast: goal, deadline, and rough budget. If you can’t find availability, message us on WhatsApp and we’ll coordinate.
+        </p>
+        <div class="cta" style="margin-top:16px;">
+          <a class="btn btn-primary" href={getWhatsAppLink("agenda", "en")} target="_blank" rel="noreferrer">Message on WhatsApp</a>
+          {FALLBACK_URL ? (
+            <a class="btn" href={FALLBACK_URL} target="_blank" rel="noreferrer" data-track="open_scheduler_fallback">
+              Open scheduler {PROVIDER ? `(${PROVIDER})` : ""}
+            </a>
+          ) : null}
+        </div>
+        {!EMBED_URL ? (
+          <div class="note muted small" style="margin-top:12px;">
+            Scheduler is not configured. Set `PUBLIC_SCHEDULING_EMBED_URL` or `PUBLIC_SCHEDULING_FALLBACK_URL` (optional
+            `PUBLIC_SCHEDULING_PROVIDER`).
+          </div>
+        ) : null}
+        {!EMBED_URL && isDev ? (
+          <div class="note muted small" style="margin-top:10px;">
+            Dev tip: add `.env` with `PUBLIC_SCHEDULING_EMBED_URL=...` (or `PUBLIC_SCHEDULING_FALLBACK_URL=...`) and restart
+            `npm run dev`.
+          </div>
+        ) : null}
+      </div>
+
+      <div data-reveal>
+        <HoursWidget />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="glass card" data-reveal>
+        <div class="h2">Availability</div>
+        <p class="muted" style="margin:10px 0 0; max-width:78ch;">
+          Times are shown in your local timezone. Quick reference: CDMX/Madrid/Los Angeles above.
+        </p>
+
+        {EMBED_URL ? (
+          <div class="frameWrap" style="margin-top:14px;">
+            {IS_CALENDLY ? (
+              <>
+                <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" />
+                <div class="calendly-inline-widget" data-url={EMBED_URL} style="min-width:320px;height:620px;"></div>
+                <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+              </>
+            ) : (
+              <iframe
+                class="frame"
+                src={EMBED_URL}
+                title="Vexora scheduler"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            )}
+          </div>
+        ) : (
+          <div class="frameWrap frameWrap--empty" style="margin-top:14px;">
+            <div class="muted">No embed configured. Use WhatsApp to schedule.</div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .small{ font-size: 13px; }
+    .frameWrap{
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.12);
+      overflow:hidden;
+      min-height: 520px;
+    }
+    .frameWrap--empty{
+      display:grid;
+      place-items:center;
+      padding: 18px;
+      min-height: 240px;
+    }
+    .frame{
+      width:100%;
+      height: 620px;
+      border:0;
+      display:block;
+    }
+    @media (max-width: 980px){
+      .frame{ height: 720px; }
+    }
+  </style>
+</BaseLayout>

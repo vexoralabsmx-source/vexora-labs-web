@@ -1,0 +1,74 @@
+---
+type FAQ = { q: string; a: string };
+type Props = { items: FAQ[] };
+const { items } = Astro.props;
+---
+<section class="faq glass card" aria-label="Preguntas frecuentes">
+  <div class="faq__grid">
+    {items.map((it, i) => (
+      <details class="qa" data-reveal>
+        <summary class="qa__q">
+          <span>{it.q}</span>
+          <span class="icon" aria-hidden="true">{i + 1}</span>
+        </summary>
+        <div class="qa__a">
+          <p class="muted">{it.a}</p>
+        </div>
+      </details>
+    ))}
+  </div>
+</section>
+
+<style>
+  .faq__grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .qa{
+    border-radius: 18px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    padding: 0;
+    overflow:hidden;
+  }
+  summary{
+    list-style:none;
+    cursor:pointer;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  .qa__q{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding: 14px 14px;
+    font-family: var(--font-display);
+    font-weight:600;
+    letter-spacing:-.01em;
+  }
+  .icon{
+    width:28px;
+    height:28px;
+    border-radius: 999px;
+    border:1px solid rgba(255,255,255,.12);
+    display:grid;
+    place-items:center;
+    font-size: 12px;
+    color: rgba(237,237,243,.78);
+    background: rgba(255,255,255,.03);
+  }
+  .qa__a{
+    padding: 0 14px 14px;
+  }
+  .qa[open]{
+    border-color: rgba(139,92,255,.28);
+    background: linear-gradient(180deg, rgba(139,92,255,.10), rgba(255,255,255,.03));
+  }
+  .qa[open] .icon{ border-color: rgba(106,228,255,.26); }
+
+  @media (max-width: 980px){
+    .faq__grid{ grid-template-columns: 1fr; }
+  }
+</style>
+

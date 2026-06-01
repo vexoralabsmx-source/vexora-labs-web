@@ -1,0 +1,133 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+---
+<BaseLayout
+  page="whatsapp"
+  title={`WhatsApp + IA — ${BRAND}`}
+  description="Automatizaciones permitidas para ventas/soporte: WhatsApp Business API, flujos, integraciones y QA. Nada de spam ni accesos no autorizados."
+  canonicalPath="/whatsapp-ia/"
+>
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <div class="pill">WhatsApp + IA</div>
+        <h1 class="h1" style="margin-top:14px;">Automatiza sin romper confianza.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:74ch;">
+          Diseñamos flujos de atencion y ventas con integraciones oficiales y practicas permitidas:
+          WhatsApp Business API (via proveedor autorizado), handoff humano y QA de tono.
+        </p>
+        <div class="cta" data-reveal>
+          <a class="btn btn-primary" href={getWhatsAppLink("whatsapp")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+          <a class="btn" href="/precios/">Ver paquetes</a>
+          <a class="btn" href="/seguridad-etica/">Seguridad y etica</a>
+        </div>
+        <div class="disclaimer glass" data-reveal>
+          <div class="disclaimer__t">Importante</div>
+          <p class="muted small" style="margin:8px 0 0;">
+            No hacemos spam, scraping, envio masivo no solicitado, bypass de politicas ni acceso no autorizado.
+            Si necesitas WhatsApp, proponemos rutas oficiales (WABA) y flujos con consentimiento.
+          </p>
+        </div>
+      </div>
+
+      <aside class="glass card" data-reveal>
+        <div class="h3">Casos de uso</div>
+        <ul class="list">
+          <li>Calificacion de leads (ventas) con handoff a humano.</li>
+          <li>Soporte: devoluciones, envios, garantias, citas.</li>
+          <li>Ruteo por intencion (ventas/soporte/posventa).</li>
+          <li>Etiquetas y sincronizacion con CRM.</li>
+          <li>Respuestas asistidas por IA (con aprobacion/guardrails).</li>
+          <li>Metricas: tiempos, temas frecuentes, calidad de atencion.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card" data-reveal>
+      <div class="sectionHead">
+        <h2 class="h2">Flujo recomendado (operable)</h2>
+        <a class="btn btn-primary" href={getWhatsAppLink("whatsapp")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+      </div>
+      <div class="grid3">
+        <article class="mod" data-reveal>
+          <div class="mod__t">1) Intake</div>
+          <p class="muted">Mensaje inicial, consentimiento, deteccion de intencion y contexto.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">2) Enrutamiento</div>
+          <p class="muted">Ventas, soporte o humano directo. Sin loops infinitos.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">3) Resolucion</div>
+          <p class="muted">Respuestas guiadas, base de conocimiento y politicas claras.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">4) Handoff</div>
+          <p class="muted">Transferencia a agente con resumen: contexto, etiquetas y proximo paso.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">5) QA y tono</div>
+          <p class="muted">Guardrails: que decir/que no decir, y revision de conversaciones.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">6) Medicion</div>
+          <p class="muted">Metricas accionables: respuesta, resolucion, abandono y temas.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Que necesitas para iniciar</h2>
+        <ul class="list">
+          <li>Objetivo: ventas, soporte o ambos.</li>
+          <li>Guia de tono (como habla tu marca).</li>
+          <li>Politicas: envios, devoluciones, precios, citas.</li>
+          <li>Herramientas actuales (CRM, sheets, email, web).</li>
+          <li>Volumen aproximado de conversaciones.</li>
+        </ul>
+      </div>
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Riesgos que evitamos</h2>
+        <ul class="list">
+          <li>Responder mal por falta de contexto (guardrails + handoff).</li>
+          <li>Automatizar sin consentimiento (cumplimiento basico).</li>
+          <li>Flujos sin salida (UX conversacional real).</li>
+          <li>Dependencia de un "prompt magico" (documentacion y QA).</li>
+        </ul>
+        <div class="ctaBox">
+          <div>
+            <div class="ctaBox__t">Brief rapido</div>
+            <div class="muted small">Industria, volumen, CRM, objetivo y fecha.</div>
+          </div>
+          <a class="btn btn-primary" href={getWhatsAppLink("whatsapp")} target="_blank" rel="noreferrer">Escribir</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px; }
+    .small{ font-size: 13px; }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 9px 0; }
+    .disclaimer{ margin-top: 16px; padding: 14px; border-radius: 18px; }
+    .disclaimer__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .sectionHead{ display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom: 12px; }
+    .grid3{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+    .mod{ border-radius: 20px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); padding: 16px; }
+    .mod__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .ctaBox{ margin-top: 16px; padding: 14px; border-radius: 18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .ctaBox__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    @media (max-width: 980px){
+      .grid3{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

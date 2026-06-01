@@ -1,0 +1,161 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { getCaseStudies } from "@/lib/caseStudies";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+
+const CASE_STUDIES = getCaseStudies("en");
+---
+<BaseLayout
+  page="portafolio"
+  title={`Portfolio — ${BRAND}`}
+  description="Vexora Labs case studies with metrics and deliverables (no fake brands): WhatsApp + AI, Discord systems, and Minecraft infra."
+  canonicalPath="/en/portfolio/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">Portfolio</div>
+        <h1 class="h1" style="margin-top:14px;">Measurable impact. Operable delivery.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:78ch;">
+          We don’t invent brands or promise impossible outcomes. We show the client type, the problem, the approach, and the metric we aim to move.
+          Every case ends with a checklist and documentation.
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("portafolio", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+        <a class="btn" href={routeFor("servicios", "en")}>View services</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container grid">
+      {CASE_STUDIES.map((c) => (
+        <article class="case glass card" data-reveal>
+          <div class="case__top">
+            <div>
+              <div class="case__type">{c.type}</div>
+              <h2 class="h2" style="margin-top:10px;">{c.title}</h2>
+            </div>
+            <a class="btn btn-primary" href={getWhatsAppLink("portafolio", "en")} target="_blank" rel="noreferrer">I want something like this</a>
+          </div>
+          <div class="case__grid">
+            <div class="block">
+              <div class="block__k">Problem</div>
+              <p class="muted" style="margin:10px 0 0;">{c.problem}</p>
+            </div>
+            <div class="block">
+              <div class="block__k">Solution</div>
+              <p class="muted" style="margin:10px 0 0;">{c.solution}</p>
+            </div>
+            <div class="block">
+              <div class="block__k">Metrics</div>
+              <ul class="list">
+                {c.metrics.map((m) => (
+                  <li>{m}</li>
+                ))}
+              </ul>
+            </div>
+            <div class="block">
+              <div class="block__k">Deliverables / stack</div>
+              <div class="tags">
+                {c.stack.map((t) => (
+                  <span class="tag">{t}</span>
+                ))}
+              </div>
+              <div class="muted small" style="margin-top:10px;">
+                We measure what matters. If there are no metrics, there’s no iteration.
+              </div>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card end" data-reveal>
+      <div>
+        <h2 class="h2">Want a similar case for your business or community?</h2>
+        <p class="muted" style="margin:10px 0 0;">
+          Message us with context. We’ll reply with scope, timeline, and options.
+        </p>
+      </div>
+      <div class="end__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("portafolio", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+        <a class="btn" href={routeFor("contacto", "en")}>Send a brief</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .case{ padding: 22px; }
+    .case__top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom: 14px;
+    }
+    .case__type{
+      display:inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: rgba(237,237,243,.80);
+      font-size: 13px;
+    }
+    .case__grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .block{
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 16px;
+    }
+    .block__k{
+      font-family: var(--font-display);
+      font-weight:650;
+      letter-spacing:-.02em;
+    }
+    .list{ margin: 12px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 8px 0; }
+    .tags{ display:flex; gap:8px; flex-wrap:wrap; margin-top: 12px; }
+    .tag{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      font-size: 13px;
+      color: rgba(237,237,243,.80);
+    }
+    .small{ font-size: 13px; }
+    .end{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .end__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    @media (max-width: 980px){
+      .case__grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

@@ -1,0 +1,253 @@
+---
+import "@/styles/global.css";
+import Nav from "@/components/Nav.astro";
+import Footer from "@/components/Footer.astro";
+import ScrollProgress from "@/components/ScrollProgress.astro";
+import SupportWidget from "@/components/SupportWidget.astro";
+import type { PageKey } from "@/lib/whatsapp";
+import { BRAND, LOGO_URL, SITE_URL } from "@/lib/constants";
+import { htmlLang, localeFromPath } from "@/lib/i18n";
+
+type Props = {
+  title: string;
+  description: string;
+  page: PageKey;
+  canonicalPath?: string;
+  noindex?: boolean;
+};
+
+const { title, description, page, canonicalPath, noindex } = Astro.props;
+const canonical = `${SITE_URL}${canonicalPath ?? Astro.url.pathname}`;
+const ogImage = LOGO_URL;
+const locale = localeFromPath(Astro.url.pathname);
+const lang = htmlLang(locale);
+const isDev = import.meta.env.DEV;
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex ? <meta name="robots" content="noindex,nofollow" /> : <meta name="robots" content="index,follow" />}
+
+    <meta property="og:site_name" content={BRAND} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="icon" href={LOGO_URL} />
+    <link rel="apple-touch-icon" href={LOGO_URL} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body data-page={page} data-locale={locale}>
+    <ScrollProgress />
+    <Nav page={page} locale={locale} />
+    <main>
+      <slot />
+    </main>
+    <Footer page={page} locale={locale} />
+    <SupportWidget page={page} locale={locale} />
+
+    <script is:inline>
+      // Scroll progress
+      (function () {
+        const bar = document.querySelector("[data-scroll-progress]");
+        if (!bar) return;
+        const update = () => {
+          const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+          const doc = document.documentElement;
+          const max = (doc.scrollHeight - doc.clientHeight) || 1;
+          const p = Math.min(1, Math.max(0, scrollTop / max));
+          bar.style.transform = `scaleX(${p})`;
+        };
+        update();
+        window.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+      })();
+
+      // Reveal on scroll
+      (function () {
+        const els = Array.from(document.querySelectorAll("[data-reveal]"));
+        if (!els.length) return;
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add("is-in");
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: "0px 0px -12% 0px", threshold: 0.08 }
+        );
+        for (const el of els) io.observe(el);
+      })();
+    </script>
+
+    <script is:inline define:vars={{ DEV: isDev }}>
+      (function () {
+        const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+        const STORAGE_KEY = "vexora_utms_v1";
+        const AUTH_KEY = "vexora_auth_v1";
+
+        function safeJsonParse(raw) {
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return null;
+          }
+        }
+
+        function readStored() {
+          try {
+            const raw = window.localStorage.getItem(STORAGE_KEY);
+            const parsed = raw ? safeJsonParse(raw) : null;
+            return parsed && typeof parsed === "object" ? parsed : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function writeStored(payload) {
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+          } catch {}
+        }
+
+        function captureUTMsFromURL() {
+          const qs = new URLSearchParams(window.location.search || "");
+          const utms = {};
+          for (const k of UTM_KEYS) {
+            const v = (qs.get(k) || "").trim();
+            if (v) utms[k] = v;
+          }
+          if (!Object.keys(utms).length) return;
+
+          const prev = readStored() || {};
+          const next = {
+            ...prev,
+            ...utms,
+            landing_path: prev.landing_path || window.location.pathname,
+            captured_at: new Date().toISOString()
+          };
+          writeStored(next);
+        }
+
+        function getUTMs() {
+          const stored = readStored() || {};
+          const out = {};
+          for (const k of UTM_KEYS) if (stored[k]) out[k] = stored[k];
+          if (stored.landing_path) out.landing_path = stored.landing_path;
+          return out;
+        }
+
+        function getAuthIdentity() {
+          try {
+            const raw = window.localStorage.getItem(AUTH_KEY);
+            const parsed = raw ? safeJsonParse(raw) : null;
+            if (!parsed || typeof parsed !== "object") return null;
+            const email = typeof parsed.email === "string" ? parsed.email : "";
+            const userId = typeof parsed.user_id === "string" ? parsed.user_id : "";
+            return email || userId ? { email, user_id: userId } : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function dispatchToProvider(name, props) {
+          // Umami (self-hosted)
+          if (window.umami && typeof window.umami.track === "function") {
+            try {
+              window.umami.track(name, props);
+              return true;
+            } catch {}
+          }
+
+          // GA4 gtag
+          if (typeof window.gtag === "function") {
+            try {
+              window.gtag("event", name, props);
+              return true;
+            } catch {}
+          }
+
+          // dataLayer (GTM)
+          if (window.dataLayer && typeof window.dataLayer.push === "function") {
+            try {
+              window.dataLayer.push({ event: name, ...props });
+              return true;
+            } catch {}
+          }
+
+          return false;
+        }
+
+        function track(name, props) {
+          const body = document.body;
+          const base = {
+            page: (body && body.dataset && body.dataset.page) || "",
+            locale: (body && body.dataset && body.dataset.locale) || "",
+            ...getUTMs()
+          };
+          const payload = { ...base, ...(props || {}) };
+          const sent = dispatchToProvider(name, payload);
+          if (!sent && DEV && window.console && typeof console.debug === "function") {
+            console.debug("[track]", name, payload);
+          }
+        }
+
+        window.vexoraTrack = track;
+        window.vexoraGetUTMs = getUTMs;
+        window.vexoraGetIdentity = getAuthIdentity;
+
+        // Capture UTMs once per landing URL (if present)
+        captureUTMsFromURL();
+
+        // View events (requested)
+        const page = document.body?.dataset?.page || "";
+        if (page === "precios") track("view_precios");
+        if (page === "portafolio") track("view_portafolio");
+
+        // Click tracking (WhatsApp + package selection)
+        document.addEventListener(
+          "click",
+          (e) => {
+            const a = e.target && e.target.closest ? e.target.closest("a[href],button[data-track],button[data-choose-package]") : null;
+            if (!a) return;
+
+            const choosePkg = a.getAttribute && a.getAttribute("data-choose-package");
+            if (choosePkg) track(`choose_package_${choosePkg}`);
+
+            const evt = a.getAttribute && a.getAttribute("data-track");
+            if (evt) track(evt);
+
+            if (a.tagName === "A") {
+              const href = a.getAttribute("href") || "";
+              if (href.includes("wa.me/") || href.includes("api.whatsapp.com/") || href.includes("whatsapp.com/")) {
+                track("click_whatsapp", { href });
+              }
+            }
+          },
+          { capture: true }
+        );
+      })();
+    </script>
+  </body>
+</html>

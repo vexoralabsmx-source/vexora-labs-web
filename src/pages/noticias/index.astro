@@ -1,0 +1,126 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+
+const SUPABASE_URL = (import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
+const SUPABASE_ANON_KEY = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+---
+<BaseLayout
+  page="home"
+  title={`Noticias — ${BRAND}`}
+  description="Novedades y anuncios de Vexora Labs."
+  canonicalPath="/noticias/"
+>
+  <section class="section">
+    <div class="container">
+      <div class="pill">Noticias</div>
+      <h1 class="h1" style="margin-top:14px;">Noticias de Vexora Labs</h1>
+      <p class="muted" style="margin-top:10px; max-width:74ch;">
+        Lanzamientos, cambios y anuncios operativos.
+      </p>
+
+      {!SUPABASE_URL || !SUPABASE_ANON_KEY ? (
+        <div class="glass card muted" style="margin-top:16px;">
+          Configura Supabase para mostrar noticias.
+        </div>
+      ) : (
+        <div class="posts" data-posts style="margin-top:16px;"></div>
+      )}
+    </div>
+  </section>
+
+  <style>
+    .posts{
+      display:grid;
+      gap:12px;
+    }
+    .post{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+      display:grid;
+      gap:8px;
+    }
+    .post__meta{
+      font-size: 12px;
+      color: rgba(237,237,243,.72);
+    }
+    .post__title{
+      font-family: var(--font-display);
+      font-size: clamp(20px, 2.6vw, 28px);
+      letter-spacing: -.02em;
+      margin: 0;
+    }
+    .post__body{
+      color: rgba(237,237,243,.86);
+      white-space: pre-wrap;
+    }
+  </style>
+
+  <script is:inline define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
+    (function(){
+      const mount = document.querySelector("[data-posts]");
+      if(!mount) return;
+
+      function formatDate(v){
+        if(!v) return "—";
+        const d = new Date(v);
+        if(Number.isNaN(d.getTime())) return "—";
+        return new Intl.DateTimeFormat("es-MX", { dateStyle: "long", timeZone: "America/Mexico_City" }).format(d);
+      }
+
+      async function loadPosts(){
+        const url = `${SUPABASE_URL}/rest/v1/content_posts?select=slug,title,excerpt,body,published_at,created_at&kind=eq.news&published=eq.true&order=published_at.desc.nullslast&limit=30`;
+        const res = await fetch(url, {
+          method: "GET",
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+        const out = await res.json().catch(() => []);
+        if(!res.ok){
+          throw new Error(out?.message || out?.error || "No se pudieron cargar noticias");
+        }
+        return Array.isArray(out) ? out : [];
+      }
+
+      function render(items){
+        mount.innerHTML = "";
+        if(!items.length){
+          const empty = document.createElement("article");
+          empty.className = "post";
+          empty.textContent = "Aún no hay noticias publicadas.";
+          mount.appendChild(empty);
+          return;
+        }
+
+        for(const item of items){
+          const card = document.createElement("article");
+          card.className = "post";
+          const meta = document.createElement("div");
+          meta.className = "post__meta";
+          meta.textContent = `Publicado: ${formatDate(item?.published_at || item?.created_at)} · /noticias/${item?.slug || ""}`;
+          const title = document.createElement("h2");
+          title.className = "post__title";
+          title.textContent = String(item?.title || "Sin título");
+          const excerpt = document.createElement("p");
+          excerpt.className = "muted";
+          excerpt.textContent = String(item?.excerpt || "");
+          const body = document.createElement("div");
+          body.className = "post__body";
+          body.textContent = String(item?.body || "");
+          card.append(meta, title);
+          if(excerpt.textContent) card.append(excerpt);
+          card.append(body);
+          mount.appendChild(card);
+        }
+      }
+
+      loadPosts().then(render).catch((err) => {
+        mount.innerHTML = `<article class="post">Error cargando noticias: ${String(err?.message || "error")}</article>`;
+      });
+    })();
+  </script>
+</BaseLayout>

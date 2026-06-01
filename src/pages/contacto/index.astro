@@ -1,0 +1,109 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import BriefBuilder from "@/components/BriefBuilder.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import HoursWidget from "@/components/HoursWidget.astro";
+import { BRAND, WHATSAPP_DISPLAY } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+---
+<BaseLayout
+  page="contacto"
+  title={`Contacto — ${BRAND}`}
+  description="Cotiza por WhatsApp o envia tu brief. Horarios dinamicos (CDMX/Madrid/Los Angeles) con estado abierto/cerrado."
+  canonicalPath="/contacto/"
+>
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <div class="pill">Contacto</div>
+        <h1 class="h1" style="margin-top:14px;">Hablemos del objetivo.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:72ch;">
+          Para cotizar rapido: objetivo, plazo, presupuesto aproximado y links (si aplica). Si tu caso toca WhatsApp + IA,
+          cuentanos volumen y herramientas actuales (CRM, web, etc.).
+        </p>
+        <div class="cta" data-reveal>
+          <a class="btn btn-primary" href={getWhatsAppLink("contacto")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+          <a class="btn" href="/precios/">Ver paquetes</a>
+          <a class="btn" href="#brief-builder">Brief guiado</a>
+          <a class="btn" href={routeFor("agenda", "es")} data-track="open_agenda">Agendar llamada</a>
+        </div>
+        <div class="contactCard" data-reveal>
+          <div class="contactCard__k muted small">WhatsApp</div>
+          <a class="contactCard__v" href={getWhatsAppLink("contacto")} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY}</a>
+          <div class="muted small" style="margin-top:10px;">
+            Si estas fuera de horario, responde el siguiente bloque habil. Igual escribe: no se pierde.
+          </div>
+        </div>
+      </div>
+
+      <div data-reveal>
+        <HoursWidget />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container stack">
+      <BriefBuilder />
+      <ContactForm page="contacto" />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Que pasa despues?</h2>
+        <ol class="steps">
+          <li><span class="n">1</span><div><div class="t">Leemos tu brief</div><div class="muted">Si falta algo, pedimos solo lo necesario.</div></div></li>
+          <li><span class="n">2</span><div><div class="t">Propuesta</div><div class="muted">Alcance, tiempos, entregables y opciones.</div></div></li>
+          <li><span class="n">3</span><div><div class="t">Inicio</div><div class="muted">Kickoff, calendario y canal de comunicacion.</div></div></li>
+        </ol>
+      </div>
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Notas de seguridad</h2>
+        <ul class="list">
+          <li>No compartas contraseñas por chat. Si se requiere acceso, definimos el metodo seguro.</li>
+          <li>No realizamos actividades ilegales o no autorizadas (spam, hacks, scraping).</li>
+          <li>Guardamos lo minimo necesario para cotizar y dar soporte (ver Seguridad y etica).</li>
+        </ul>
+        <div class="ctaBox">
+          <div>
+            <div class="ctaBox__t">Preferencia de contacto</div>
+            <div class="muted small">WhatsApp es lo mas rapido; formulario es ideal para briefs largos.</div>
+          </div>
+          <a class="btn" href="/seguridad-etica/">Ver Seguridad y etica</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .stack{ display:grid; gap:16px; }
+    .cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px; }
+    .small{ font-size: 13px; }
+    .contactCard{
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+    }
+    .contactCard__v{
+      display:inline-block;
+      font-family: var(--font-display);
+      font-weight:700;
+      letter-spacing:-.02em;
+      margin-top: 6px;
+      border-bottom:1px solid rgba(106,228,255,.22);
+    }
+    .steps{ margin: 14px 0 0; padding:0; list-style:none; display:grid; gap:10px; }
+    .steps li{ display:grid; grid-template-columns: 34px 1fr; gap:12px; padding: 12px; border-radius: 18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); }
+    .n{ width:34px; height:34px; border-radius: 14px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(139,92,255,.18), rgba(255,255,255,.03)); font-family: var(--font-display); font-weight:700; }
+    .t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 10px 0; }
+    .ctaBox{ margin-top: 16px; padding: 14px; border-radius: 18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .ctaBox__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+  </style>
+</BaseLayout>

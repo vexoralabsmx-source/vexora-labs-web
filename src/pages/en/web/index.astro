@@ -1,0 +1,130 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+---
+<BaseLayout
+  page="web"
+  title={`Premium web / UI-UX — ${BRAND}`}
+  description="Premium landing pages and multi-page sites: clean UI, conversion copy, performance, accessibility, and technical SEO. Fast builds, minimal JS."
+  canonicalPath="/en/web/"
+>
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <div class="pill">Web / UI-UX</div>
+        <h1 class="h1" style="margin-top:14px;">A website that feels expensive.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:72ch;">
+          We design and build premium experiences with real performance: typography, rhythm, micro-interactions, and technical SEO.
+          Less scripts. More control.
+        </p>
+        <div class="cta" data-reveal>
+          <a class="btn btn-primary" href={getWhatsAppLink("web", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+          <a class="btn" href={routeFor("portafolio", "en")}>See results</a>
+          <a class="btn" href={routeFor("precios", "en")}>View packages</a>
+        </div>
+        <div class="note muted small" data-reveal>
+          This website is built with Astro + TypeScript and minimal JS for fast loads (true multi-page).
+        </div>
+      </div>
+
+      <aside class="glass card" data-reveal>
+        <div class="h3">Includes</div>
+        <ul class="list">
+          <li>UI system: tokens, components, consistency.</li>
+          <li>Conversion copy (EN): pitch, benefits, CTAs, objections.</li>
+          <li>Technical SEO: titles, metas, OG, sitemap/robots.</li>
+          <li>Accessibility: focus states, contrast, semantics.</li>
+          <li>Performance: optimized assets and minimal JS.</li>
+          <li>Deploy: Netlify or Vercel with a checklist.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card" data-reveal>
+      <div class="sectionHead">
+        <h2 class="h2">Engineering precision</h2>
+        <a class="btn btn-primary" href={getWhatsAppLink("web", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+      </div>
+      <div class="grid3">
+        <article class="mod" data-reveal>
+          <div class="mod__t">Multi-page architecture</div>
+          <p class="muted">Real routes, reusable components, and per-page SEO head.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Core Web Vitals</div>
+          <p class="muted">Fast loads, less JS, efficient CSS, optimized resources.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Accessibility</div>
+          <p class="muted">Keyboard support, visible focus, semantics, accessible patterns.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Conversion</div>
+          <p class="muted">Hierarchy, copy, key sections, social proof, per-page CTAs.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Scalability</div>
+          <p class="muted">Design tokens and components to grow without rework.</p>
+        </article>
+        <article class="mod" data-reveal>
+          <div class="mod__t">Serious handoff</div>
+          <p class="muted">Documentation, checklist, and update guidelines.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Recommended structure</h2>
+        <ul class="list">
+          <li><strong>Home:</strong> clear pitch, social proof, CTAs.</li>
+          <li><strong>Services:</strong> explorer and pages per vertical.</li>
+          <li><strong>Portfolio:</strong> cases with metrics (no fake brands).</li>
+          <li><strong>Pricing:</strong> packages, comparison, custom.</li>
+          <li><strong>FAQ + Contact:</strong> zero friction to close.</li>
+        </ul>
+      </div>
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Quality baseline</h2>
+        <ul class="list">
+          <li>Real responsive checks (mobile-first).</li>
+          <li>Unique titles and descriptions per page.</li>
+          <li>OG tags ready for sharing.</li>
+          <li>Visible focus states + contrast.</li>
+          <li>JS only where it matters (hours, filters, accordions).</li>
+        </ul>
+        <div class="ctaBox">
+          <div>
+            <div class="ctaBox__t">Quick brief</div>
+            <div class="muted small">Goal, audience, offer, pages, references.</div>
+          </div>
+          <a class="btn btn-primary" href={getWhatsAppLink("web", "en")} target="_blank" rel="noreferrer">Message</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px; }
+    .small{ font-size: 13px; }
+    .note{ margin-top: 14px; }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 9px 0; }
+    .sectionHead{ display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom: 12px; }
+    .grid3{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+    .mod{ border-radius: 20px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); padding: 16px; }
+    .mod__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .ctaBox{ margin-top: 16px; padding: 14px; border-radius: 18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .ctaBox__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    @media (max-width: 980px){
+      .grid3{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

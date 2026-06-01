@@ -1,0 +1,136 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND, TAGLINE } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+---
+<BaseLayout
+  page="sobre"
+  title={`Sobre — ${BRAND}`}
+  description="Proceso y valores de Vexora Labs: precision, performance, seguridad y experiencia premium. Infraestructura digital para crecer sin friccion."
+  canonicalPath="/sobre/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">Sobre Vexora</div>
+        <h1 class="h1" style="margin-top:14px;">{TAGLINE}</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:80ch;">
+          Vexora Labs es un studio/lab enfocado en construir sistemas digitales premium: UI limpia, performance y operacion real.
+          Nuestra obsesion: que tu producto o comunidad se sienta estable, claro y confiable.
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("sobre")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <a class="btn" href="/servicios/">Ver servicios</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Valores</h2>
+        <div class="values">
+          <div class="val" data-reveal>
+            <div class="val__t">Precision</div>
+            <div class="muted">Menos opiniones, mas decisiones con criterio y tradeoffs claros.</div>
+          </div>
+          <div class="val" data-reveal>
+            <div class="val__t">Performance</div>
+            <div class="muted">Velocidad y simplicidad como parte del diseño, no como optimizacion tardia.</div>
+          </div>
+          <div class="val" data-reveal>
+            <div class="val__t">Seguridad</div>
+            <div class="muted">Minimo privilegio, auditabilidad y procesos para evitar incidentes.</div>
+          </div>
+          <div class="val" data-reveal>
+            <div class="val__t">Entrega operable</div>
+            <div class="muted">Checklist, runbook y handoff para que no dependas de nosotros.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Proceso (paso a paso)</h2>
+        <ol class="steps">
+          <li><span class="n">1</span><div><div class="t">Discovery corto</div><div class="muted">Objetivo, restricciones, riesgos y definicion de exito.</div></div></li>
+          <li><span class="n">2</span><div><div class="t">Diseño de sistema</div><div class="muted">UI, flows, permisos, arquitectura y decisiones documentadas.</div></div></li>
+          <li><span class="n">3</span><div><div class="t">Build</div><div class="muted">Componentes, integraciones y QA incremental.</div></div></li>
+          <li><span class="n">4</span><div><div class="t">QA + entrega</div><div class="muted">Performance, accesibilidad y checklist final con handoff.</div></div></li>
+        </ol>
+        <div class="ctaBox">
+          <div>
+            <div class="ctaBox__t">Quieres ver como se veria en tu caso?</div>
+            <div class="muted small">En 10 min por WhatsApp podemos aterrizar el alcance.</div>
+          </div>
+          <a class="btn btn-primary" href={getWhatsAppLink("sobre")} target="_blank" rel="noreferrer">Escribir</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card" data-reveal>
+      <h2 class="h2">Por que esto importa</h2>
+      <div class="why">
+        <div class="why__item" data-reveal>
+          <div class="why__t">Una web lenta pierde dinero.</div>
+          <div class="muted">No es estetica: es conversion, SEO y confianza.</div>
+        </div>
+        <div class="why__item" data-reveal>
+          <div class="why__t">Una comunidad sin procesos se vuelve riesgo.</div>
+          <div class="muted">Roles/permisos y logs evitan abuso y caos.</div>
+        </div>
+        <div class="why__item" data-reveal>
+          <div class="why__t">Automatizar sin etica destruye reputacion.</div>
+          <div class="muted">Preferimos integraciones oficiales y consentimiento.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .values{ display:grid; gap:10px; margin-top: 14px; }
+    .val{
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+    }
+    .val__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+
+    .steps{ margin: 14px 0 0; padding:0; list-style:none; display:grid; gap:10px; }
+    .steps li{ display:grid; grid-template-columns: 34px 1fr; gap:12px; padding: 12px; border-radius: 18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); }
+    .n{ width:34px; height:34px; border-radius: 14px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(139,92,255,.18), rgba(255,255,255,.03)); font-family: var(--font-display); font-weight:700; }
+    .t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .small{ font-size: 13px; }
+    .ctaBox{ margin-top: 16px; padding: 14px; border-radius: 18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .ctaBox__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+
+    .why{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+    }
+    .why__item{
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 16px;
+    }
+    .why__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    @media (max-width: 980px){
+      .why{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

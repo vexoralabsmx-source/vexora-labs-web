@@ -1,0 +1,466 @@
+---
+import { getPricing, getSupportAddon } from "@/lib/pricing";
+import { getWhatsAppLink, type PageKey } from "@/lib/whatsapp";
+import { CURRENCIES, DEFAULT_CURRENCY, formatMoneyFromMXN } from "@/lib/currency";
+import { localeFromPath, type Locale } from "@/lib/i18n";
+import { routeFor } from "@/lib/routes";
+
+type Props = { page: PageKey };
+const { page } = Astro.props;
+const locale: Locale = localeFromPath(Astro.url.pathname);
+const PRICING = getPricing(locale);
+const SUPPORT_ADDON = getSupportAddon(locale);
+const t = {
+  aria: locale === "en" ? "Package comparison" : "Comparador de paquetes",
+  title: locale === "en" ? "Clear packages. No surprises." : "Paquetes claros. Sin sorpresas.",
+  lead:
+    locale === "en"
+      ? "One-time project pricing. Add monthly support if you want continuity."
+      : "Precio por proyecto (pago unico). Puedes agregar soporte mensual si quieres continuidad.",
+  currency: locale === "en" ? "Currency" : "Moneda",
+  supportToggle: locale === "en" ? "Show monthly support" : "Mostrar soporte mensual",
+  quote: locale === "en" ? "Get a quote on WhatsApp" : "Cotizar por WhatsApp",
+  express: locale === "en" ? "Express quote" : "Cotizador express",
+  fxNote:
+    locale === "en"
+      ? "Estimated exchange rate. Final quote is confirmed in the proposal."
+      : "Tipo de cambio estimado. Se confirma en propuesta.",
+  oneTime: locale === "en" ? "one-time" : "pago unico",
+  from: locale === "en" ? "From" : "Desde",
+  cadence: locale === "en" ? "mo" : "mes",
+  talk: locale === "en" ? "Talk to Vexora" : "Hablar con Vexora",
+  quoteShort: locale === "en" ? "Quote" : "Cotizar",
+  expressShort: locale === "en" ? "Estimate" : "Estimar",
+  tableTitle: locale === "en" ? "Quick comparison" : "Comparador rapido",
+  tableLead:
+    locale === "en"
+      ? "A visual guide to decide. Exact scope is defined in the proposal."
+      : "Guia visual para decidir. El alcance exacto se define en la propuesta.",
+  thIncludes: locale === "en" ? "Includes" : "Incluye",
+  rows: {
+    ui: locale === "en" ? "Design + UI system" : "Diseño + UI system",
+    seo: locale === "en" ? "Technical SEO (titles/OG/sitemap)" : "SEO tecnico (titles/OG/sitemap)",
+    anim: locale === "en" ? "Premium animations" : "Animaciones premium",
+    integ: locale === "en" ? "Integrations / automations" : "Integraciones / automatizaciones",
+    sec: locale === "en" ? "Security & hardening" : "Seguridad y hardening",
+    docs: locale === "en" ? "Documentation + handoff" : "Documentacion + handoff"
+  },
+  cells: {
+    base: locale === "en" ? "Base" : "Base",
+    full: locale === "en" ? "Full" : "Completo",
+    fullScale: locale === "en" ? "Full + scalable" : "Completo + escalable",
+    yes: locale === "en" ? "Yes" : "Si",
+    yesAudit: locale === "en" ? "Yes + audit" : "Si + auditoria",
+    min: locale === "en" ? "Minimal" : "Minimas",
+    reveal: locale === "en" ? "Reveal + micro" : "Reveal + micro",
+    sequences: locale === "en" ? "Reveal + sequences" : "Reveal + secuencias",
+    dash: "—",
+    one: "1",
+    multistep: locale === "en" ? "Multi-step" : "Multi-step",
+    best: locale === "en" ? "Best practices" : "Buenas practicas",
+    basicQa: locale === "en" ? "Basic + QA" : "Basico + QA",
+    layered: locale === "en" ? "Layered + runbook" : "Por capas + runbook"
+  }
+};
+---
+<section class="pricing glass card" aria-label={t.aria}>
+  <div class="pricing__head">
+    <div>
+      <div class="h2">{t.title}</div>
+      <p class="muted" style="margin:10px 0 0;">
+        {t.lead}
+      </p>
+    </div>
+    <div class="pricing__actions">
+      <label class="currency" aria-label={t.currency}>
+        <span class="currency__label muted">{t.currency}</span>
+        <select class="currency__select" data-currency-select>
+          {Object.entries(CURRENCIES).map(([code, cfg]) => (
+            <option value={code} selected={code === DEFAULT_CURRENCY}>
+              {cfg.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" data-support-toggle />
+        <span class="toggle__track" aria-hidden="true"></span>
+        <span class="toggle__label muted">{t.supportToggle}</span>
+      </label>
+      <a class="btn btn-primary" href={getWhatsAppLink(page, locale)} target="_blank" rel="noreferrer">{t.quote}</a>
+    </div>
+  </div>
+
+  <div class="muted small" style="margin:-6px 0 14px;">
+    {t.fxNote}
+  </div>
+
+  <div class="tiers">
+    {PRICING.map((tier) => (
+      <article class={`tier ${tier.id === "core" ? "is-featured" : ""}`} data-reveal data-tier={tier.id}>
+        <div class="tier__top">
+          <div class="tier__name">{tier.name}</div>
+          <div class="tier__price">
+            <span
+              class="tier__amount"
+              data-money-mxn={String(tier.priceOneTimeMXN)}
+              data-money-suffix={tier.priceOneTimeSuffix ?? ""}
+            >
+              {formatMoneyFromMXN(tier.priceOneTimeMXN, "MXN")}
+              {tier.priceOneTimeSuffix ?? ""}
+            </span>
+            <span class="tier__small muted">{t.oneTime}</span>
+          </div>
+        </div>
+        <div class="muted">{tier.ideal}</div>
+        <ul class="tier__list">
+          {tier.includes.map((x) => (
+            <li>{x}</li>
+          ))}
+        </ul>
+        <div class="tier__not">
+          <div class="muted small">No incluido / depende del alcance</div>
+          <ul class="tier__list tier__list--thin">
+            {tier.notIncluded.map((x) => (
+              <li>{x}</li>
+            ))}
+          </ul>
+        </div>
+        <div class="tier__cta">
+          <a class="btn" href={routeFor("contacto", locale)}>{t.talk}</a>
+          <button class="btn" type="button" data-open-cotizador data-prefill-package={tier.id}>{t.expressShort}</button>
+          <a
+            class="btn btn-primary"
+            href={getWhatsAppLink(page, locale)}
+            target="_blank"
+            rel="noreferrer"
+            data-choose-package={tier.id}
+          >
+            {t.quoteShort}
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <div class="addon" data-support>
+    <div class="addon__left">
+      <div class="addon__title">{SUPPORT_ADDON.label}</div>
+      <div class="addon__price">
+        <span class="addon__from muted small">{t.from}</span>
+        <span class="addon__amount" data-money-mxn={String(SUPPORT_ADDON.priceMonthlyFromMXN)} data-money-cadence={t.cadence}>
+          {formatMoneyFromMXN(SUPPORT_ADDON.priceMonthlyFromMXN, "MXN")}/{t.cadence}
+        </span>
+      </div>
+      <div class="muted small">
+        {locale === "en"
+          ? "Ideal for keeping performance, basic security, and tweaks without friction."
+          : "Ideal para mantener performance, seguridad basica y ajustes sin friccion."}
+      </div>
+    </div>
+    <ul class="addon__list">
+      {SUPPORT_ADDON.includes.map((x) => (
+        <li>{x}</li>
+      ))}
+    </ul>
+  </div>
+
+  <div class="tableWrap" data-reveal>
+    <div class="tableTitle">{t.tableTitle}</div>
+    <div class="muted small" style="margin-top:6px;">
+      {t.tableLead}
+    </div>
+    <div class="tableScroll" role="region" aria-label="Tabla comparativa" tabindex="0">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">{t.thIncludes}</th>
+            <th scope="col">Starter</th>
+            <th scope="col">Core</th>
+            <th scope="col">Scale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">{t.rows.ui}</th>
+            <td>{t.cells.base}</td>
+            <td>{t.cells.full}</td>
+            <td>{t.cells.fullScale}</td>
+          </tr>
+          <tr>
+            <th scope="row">{t.rows.seo}</th>
+            <td>{t.cells.base}</td>
+            <td>{t.cells.yes}</td>
+            <td>{t.cells.yesAudit}</td>
+          </tr>
+          <tr>
+            <th scope="row">{t.rows.anim}</th>
+            <td>{t.cells.min}</td>
+            <td>{t.cells.reveal}</td>
+            <td>{t.cells.sequences}</td>
+          </tr>
+          <tr>
+            <th scope="row">{t.rows.integ}</th>
+            <td>{t.cells.dash}</td>
+            <td>{t.cells.one}</td>
+            <td>{t.cells.multistep}</td>
+          </tr>
+          <tr>
+            <th scope="row">{t.rows.sec}</th>
+            <td>{t.cells.best}</td>
+            <td>{t.cells.basicQa}</td>
+            <td>{t.cells.layered}</td>
+          </tr>
+          <tr>
+            <th scope="row">{t.rows.docs}</th>
+            <td>{t.cells.yes}</td>
+            <td>{t.cells.yes}</td>
+            <td>{locale === "en" ? "Yes (ops)" : "Si (operacion)"}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script is:inline define:vars={{ CURRENCIES, DEFAULT: DEFAULT_CURRENCY }}>
+  (function(){
+    const root = document.currentScript?.closest("section");
+    if(!root) return;
+
+    const currencySelect = root.querySelector("[data-currency-select]");
+    const moneyEls = Array.from(root.querySelectorAll("[data-money-mxn]"));
+    const toggle = root.querySelector("[data-support-toggle]");
+    const addon = root.querySelector("[data-support]");
+    if(!toggle || !addon) return;
+
+    const STORAGE_KEY = "vexora_currency";
+
+    function getCurrency(){
+      const fromStorage = window.localStorage.getItem(STORAGE_KEY);
+      if(fromStorage && CURRENCIES[fromStorage]) return fromStorage;
+      return DEFAULT;
+    }
+
+    function formatMoney(amountMXN, currency){
+      const cfg = CURRENCIES[currency] || CURRENCIES[DEFAULT];
+      const amount = amountMXN * cfg.rateFromMXN;
+      return new Intl.NumberFormat(cfg.locale, {
+        style: "currency",
+        currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+
+    function syncMoney(){
+      const currency = getCurrency();
+      for(const el of moneyEls){
+        const mxn = Number(el.dataset.moneyMxn || "0");
+        const suffix = el.dataset.moneySuffix || "";
+        const cadence = el.dataset.moneyCadence;
+        const base = formatMoney(mxn, currency) + suffix;
+        el.textContent = cadence ? `${base}/${cadence}` : base;
+      }
+      if(currencySelect) currencySelect.value = currency;
+    }
+
+    const sync = () => {
+      const on = toggle.checked;
+      addon.classList.toggle("is-on", on);
+    };
+    toggle.addEventListener("change", sync);
+    sync();
+
+    if(currencySelect){
+      currencySelect.addEventListener("change", () => {
+        const v = currencySelect.value;
+        if(CURRENCIES[v]) window.localStorage.setItem(STORAGE_KEY, v);
+        syncMoney();
+      });
+    }
+
+    syncMoney();
+  })();
+</script>
+
+<style>
+  .pricing__head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom: 18px;
+  }
+  .pricing__actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .currency{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .currency__label{ font-size: 14px; }
+  .currency__select{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.14);
+    border-radius: 999px;
+    padding: 8px 10px;
+  }
+  .toggle{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .toggle input{ position:absolute; opacity:0; width:1px; height:1px; }
+  .toggle__track{
+    width:42px;
+    height:24px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.05);
+    position:relative;
+  }
+  .toggle__track::after{
+    content:"";
+    width:18px;
+    height:18px;
+    border-radius:99px;
+    position:absolute;
+    top:50%;
+    left:3px;
+    transform: translateY(-50%);
+    background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.10));
+    transition: left .18s ease, background .18s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  .toggle input:checked + .toggle__track{
+    border-color: rgba(106,228,255,.30);
+    background: linear-gradient(180deg, rgba(139,92,255,.20), rgba(255,255,255,.04));
+  }
+  .toggle input:checked + .toggle__track::after{
+    left: 21px;
+    background: linear-gradient(180deg, rgba(106,228,255,.40), rgba(139,92,255,.18));
+  }
+  .toggle__label{ font-size: 14px; }
+
+  .tiers{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+  }
+  .tier{
+    padding: 18px;
+    border-radius: 22px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+  }
+  .tier.is-featured{
+    border-color: rgba(139,92,255,.30);
+    box-shadow: var(--glow);
+    background: linear-gradient(180deg, rgba(139,92,255,.12), rgba(255,255,255,.03));
+  }
+  .tier__top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom: 10px;
+  }
+  .tier__name{ font-family: var(--font-display); font-weight:700; letter-spacing:-.02em; }
+  .tier__price{ text-align:right; }
+  .tier__amount{ font-family: var(--font-display); font-weight:700; letter-spacing:-.02em; }
+  .tier__small{ display:block; font-size: 12px; margin-top: 2px; }
+  .tier__list{
+    margin: 14px 0 0;
+    padding-left: 18px;
+    color: rgba(237,237,243,.84);
+  }
+  .tier__list li{ margin: 7px 0; }
+  .tier__list--thin li{ margin: 6px 0; }
+  .tier__not{ margin-top: 14px; }
+  .small{ font-size: 13px; }
+  .tier__cta{ margin-top: 16px; display:flex; gap:10px; flex-wrap:wrap; }
+
+  .addon{
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 22px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    display:none;
+    gap:14px;
+    grid-template-columns: .9fr 1.1fr;
+  }
+  .addon.is-on{ display:grid; }
+  .addon__title{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+  .addon__left{ display:grid; gap:6px; }
+  .addon__price{ margin-top: 4px; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .addon__amount{ font-family: var(--font-display); font-weight:700; letter-spacing:-.02em; }
+  .addon__list{ margin:0; padding-left:18px; color: rgba(237,237,243,.84); }
+  .addon__list li{ margin: 6px 0; }
+
+  .tableWrap{
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .tableTitle{
+    font-family: var(--font-display);
+    font-weight:650;
+    letter-spacing:-.02em;
+  }
+  .tableScroll{
+    margin-top: 12px;
+    overflow:auto;
+    border-radius: 18px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+  }
+  .table{
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+  }
+  .table th, .table td{
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    text-align: left;
+    vertical-align: top;
+    font-size: 14px;
+  }
+  .table thead th{
+    font-family: var(--font-display);
+    font-weight:650;
+    color: rgba(237,237,243,.92);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  }
+  .table tbody th{
+    font-weight:600;
+    color: rgba(237,237,243,.86);
+  }
+  .table tbody tr:hover td, .table tbody tr:hover th{
+    background: rgba(255,255,255,.02);
+  }
+
+  @media (max-width: 1100px){
+    .tiers{ grid-template-columns: 1fr; }
+    .addon{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px){
+    .pricing__head{ flex-direction:column; align-items:stretch; }
+    .pricing__actions{ justify-content:flex-start; }
+  }
+</style>

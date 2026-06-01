@@ -1,0 +1,2 @@
+# Astro SSR on Netlify: routes are handled by the Netlify adapter.
+# Keep this file only if you need explicit redirects.

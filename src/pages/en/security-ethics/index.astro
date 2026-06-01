@@ -1,0 +1,125 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+---
+<BaseLayout
+  page="seguridad"
+  title={`Security & ethics — ${BRAND}`}
+  description="A simple security, privacy, and ethics policy. Basic practices, reasonable compliance, and a trust-first approach. No hacks, no spam."
+  canonicalPath="/en/security-ethics/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">Security & ethics</div>
+        <h1 class="h1" style="margin-top:14px;">Trust is a requirement.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:80ch;">
+          Vexora Labs builds digital infrastructure. That implies responsibility. This page explains boundaries, basic practices,
+          and how we protect your information without inventing certifications.
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("seguridad", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+        <a class="btn" href={routeFor("contacto", "en")}>Contact</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container grid2">
+      <article class="glass card" data-reveal>
+        <h2 class="h2">What we do NOT do</h2>
+        <ul class="list">
+          <li>Hacks, exploits, doxxing, phishing, or unauthorized access.</li>
+          <li>Spam, scraping without consent, or unsolicited bulk messaging.</li>
+          <li>Policy bypass (WhatsApp/Discord/hosting/providers).</li>
+          <li>Social engineering to obtain access.</li>
+        </ul>
+        <p class="muted small" style="margin:12px 0 0;">
+          If a request implies harm, abuse, or illegality, we refuse it and propose legitimate alternatives.
+        </p>
+      </article>
+
+      <article class="glass card" data-reveal>
+        <h2 class="h2">Privacy (simple and honest)</h2>
+        <ul class="list">
+          <li>We keep the minimum needed to quote and support you (name, contact, brief).</li>
+          <li>We don’t sell your information.</li>
+          <li>We share data only if needed to operate (e.g., WABA provider) and with your knowledge.</li>
+          <li>We prefer temporary access and least privilege.</li>
+        </ul>
+        <p class="muted small" style="margin:12px 0 0;">
+          If you need specific requirements (NDA, retention, permissions), we define them in writing.
+        </p>
+      </article>
+
+      <article class="glass card" data-reveal>
+        <h2 class="h2">WhatsApp + AI (compliant practices)</h2>
+        <ul class="list">
+          <li>We recommend WhatsApp Business API via an authorized provider.</li>
+          <li>Consent-based flows, opt-out, and human handoff when needed.</li>
+          <li>AI-assisted replies with guardrails (what to say / what not to say).</li>
+          <li>Metrics to control quality, not only volume.</li>
+        </ul>
+      </article>
+
+      <article class="glass card" data-reveal>
+        <h2 class="h2">Operational best practices</h2>
+        <ul class="list">
+          <li>Delivery checklist and validation.</li>
+          <li>Backups and test restores (when applicable).</li>
+          <li>Auditable logs for communities (Discord) and controlled changes.</li>
+          <li>Documentation and runbooks to operate without depending on us.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card end" data-reveal>
+      <div>
+        <h2 class="h2">If your project is sensitive, even better.</h2>
+        <p class="muted" style="margin:10px 0 0;">
+          We define permissions, access, and boundaries from day one. Security is not a “phase” — it’s the baseline.
+        </p>
+      </div>
+      <div class="end__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("seguridad", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+        <a class="btn" href={routeFor("sobre", "en")}>See process</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 10px 0; }
+    .small{ font-size: 13px; }
+    .end{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .end__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    @media (max-width: 980px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

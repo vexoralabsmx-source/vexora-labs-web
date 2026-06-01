@@ -1,0 +1,750 @@
+---
+import { WHATSAPP_PHONE_E164 } from "@/lib/constants";
+import { localeFromPath, type Locale } from "@/lib/i18n";
+import PhoneField from "@/components/PhoneField.astro";
+
+type Props = { id?: string };
+const { id = "brief-builder" } = Astro.props;
+
+const locale: Locale = localeFromPath(Astro.url.pathname);
+const CONTACT_EMAIL = (import.meta.env.PUBLIC_CONTACT_EMAIL ?? "").trim() || "vexoralabsmx@gmail.com";
+
+const t = {
+  aria: locale === "en" ? "Brief builder" : "Brief builder",
+  title: locale === "en" ? "Brief builder (guided)" : "Brief builder (guiado)",
+  headline:
+    locale === "en" ? "Send a brief we can execute." : "Envía un brief operable.",
+  lead:
+    locale === "en"
+      ? "Answer a few questions and send a ready-to-work summary. Autosaves on this device."
+      : "Responde unas preguntas y envía un resumen operable. Se guarda automático en este dispositivo.",
+  step: locale === "en" ? "Step" : "Paso",
+  of: locale === "en" ? "of" : "de",
+  back: locale === "en" ? "Back" : "Atrás",
+  next: locale === "en" ? "Next" : "Siguiente",
+  close: locale === "en" ? "Clear draft" : "Borrar draft",
+
+  steps:
+    locale === "en"
+      ? ["Contact", "Service", "Goal", "Links", "Review"]
+      : ["Contacto", "Servicio", "Objetivo", "Links", "Resumen"],
+
+  name: locale === "en" ? "Name" : "Nombre",
+  company: locale === "en" ? "Company (optional)" : "Empresa (opcional)",
+  email: locale === "en" ? "Email (optional)" : "Email (opcional)",
+  whatsapp: locale === "en" ? "WhatsApp (optional)" : "WhatsApp (opcional)",
+  contactHint:
+    locale === "en"
+      ? "Provide at least one: email or WhatsApp."
+      : "Deja al menos uno: email o WhatsApp.",
+
+  service: locale === "en" ? "Service type" : "Tipo de servicio",
+  serviceHint:
+    locale === "en" ? "Pick one or more." : "Puedes elegir uno o varios.",
+  serviceOptions: ["Discord", "Minecraft", "Web", locale === "en" ? "Automations" : "Automatizaciones"],
+
+  objective: locale === "en" ? "Goal" : "Objetivo",
+  objectivePh:
+    locale === "en"
+      ? "What should the system achieve? Context, constraints, success criteria…"
+      : "¿Qué debe lograr el sistema? Contexto, restricciones, criterio de éxito…",
+  deadline: locale === "en" ? "Deadline" : "Deadline",
+  budget: locale === "en" ? "Budget range" : "Rango de presupuesto",
+  select: locale === "en" ? "Select" : "Selecciona",
+  budgets:
+    locale === "en"
+      ? ["Under $8k MXN", "$8k–$15k MXN", "$15k–$26k MXN", "Need recommendation", "Not defined"]
+      : ["Menos de $8k MXN", "$8k–$15k MXN", "$15k–$26k MXN", "Necesito recomendación", "No definido"],
+
+  links: locale === "en" ? "Links" : "Links",
+  linkSite: locale === "en" ? "Website" : "Sitio web",
+  linkDiscord: locale === "en" ? "Discord invite" : "Invite de Discord",
+  linkOther: locale === "en" ? "Other link (optional)" : "Otro link (opcional)",
+  upload: locale === "en" ? "Upload (optional)" : "Upload (opcional)",
+  uploadHint:
+    locale === "en"
+      ? "File uploads are disabled in this build. Paste a Drive/Notion link instead."
+      : "Uploads deshabilitados en esta versión. Mejor pega un link de Drive/Notion.",
+
+  review: locale === "en" ? "Review & send" : "Revisa y envía",
+  copy: locale === "en" ? "Copy summary" : "Copiar resumen",
+  copied: locale === "en" ? "Copied" : "Copiado",
+  sendWa: locale === "en" ? "Send via WhatsApp" : "Enviar por WhatsApp",
+  sendEmail: locale === "en" ? "Send via Email" : "Enviar por Email",
+  emailDisabled:
+    locale === "en"
+      ? "Email is not configured. Set PUBLIC_CONTACT_EMAIL."
+      : "Email no configurado. Define PUBLIC_CONTACT_EMAIL.",
+
+  required: locale === "en" ? "This field is required." : "Este campo es requerido.",
+  invalidEmail: locale === "en" ? "Enter a valid email." : "Escribe un email válido.",
+  invalidPhone: locale === "en" ? "Enter a valid WhatsApp number." : "Escribe un WhatsApp válido."
+};
+
+const initialStepText = `${t.step} 1 ${t.of} 5 · ${t.steps[0]}`;
+---
+
+<section class="bb glass card" aria-label={t.aria} id={id} data-reveal>
+  <div class="bb__head">
+    <div>
+      <div class="pill">{t.title}</div>
+      <div class="h2" style="margin-top:14px;">{t.headline}</div>
+      <p class="muted" style="margin:10px 0 0; max-width:78ch;">{t.lead}</p>
+    </div>
+    <div class="bb__headActions">
+      <button class="btn" type="button" data-bb-clear>{t.close}</button>
+    </div>
+  </div>
+
+  <form class="bb__form" data-bb-form novalidate>
+    <div class="bb__steps" aria-hidden="true">
+      {t.steps.map((label, idx) => (
+        <div class="bb__chip" data-bb-chip={String(idx)}>
+          <span class="n">{idx + 1}</span>
+          <span class="l">{label}</span>
+        </div>
+      ))}
+    </div>
+
+    <div class="muted small" data-bb-step>{initialStepText}</div>
+
+    <section class="bb__pane" data-bb-step-pane="0">
+      <div class="h3">{t.steps[0]}</div>
+      <div class="bb__grid" style="margin-top:12px;">
+        <label class="bb__field">
+          <span class="bb__label">{t.name}</span>
+          <input class="bb__input" name="name" autocomplete="name" required minlength="2" />
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+        <label class="bb__field">
+          <span class="bb__label">{t.company}</span>
+          <input class="bb__input" name="company" autocomplete="organization" />
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+        <label class="bb__field">
+          <span class="bb__label">{t.email}</span>
+          <input
+            class="bb__input"
+            name="email"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+        <div class="bb__field">
+          <PhoneField
+            name="whatsapp"
+            label={t.whatsapp}
+            locale={locale}
+            defaultIso2="MX"
+            help={locale === "en" ? "Choose your country and enter your number." : "Elige tu país y escribe tu número."}
+          />
+          <span class="bb__err" aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="muted small" style="margin-top:10px;">{t.contactHint}</div>
+      <div class="bb__errLine" data-bb-err-contact></div>
+    </section>
+
+    <section class="bb__pane" data-bb-step-pane="1" hidden>
+      <div class="h3">{t.steps[1]}</div>
+      <p class="muted small" style="margin:10px 0 0;">{t.serviceHint}</p>
+      <div class="bb__checks" style="margin-top:12px;">
+        {t.serviceOptions.map((x) => (
+          <label class="bb__check">
+            <input type="checkbox" name="service" value={x} />
+            <span>{x}</span>
+          </label>
+        ))}
+      </div>
+      <div class="bb__errLine" data-bb-err></div>
+    </section>
+
+    <section class="bb__pane" data-bb-step-pane="2" hidden>
+      <div class="h3">{t.steps[2]}</div>
+      <label class="bb__field" style="margin-top:12px;">
+        <span class="bb__label">{t.objective}</span>
+        <textarea class="bb__input" name="objective" required minlength="10" rows="5" placeholder={t.objectivePh}></textarea>
+        <span class="bb__err" aria-live="polite"></span>
+      </label>
+      <div class="bb__grid" style="margin-top:12px;">
+        <label class="bb__field">
+          <span class="bb__label">{t.deadline}</span>
+          <input class="bb__input" name="deadline" type="date" />
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+        <label class="bb__field">
+          <span class="bb__label">{t.budget}</span>
+          <select class="bb__input" name="budget" required>
+            <option value="">{t.select}</option>
+            {t.budgets.map((b) => (
+              <option value={b}>{b}</option>
+            ))}
+          </select>
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+      </div>
+    </section>
+
+    <section class="bb__pane" data-bb-step-pane="3" hidden>
+      <div class="h3">{t.steps[3]}</div>
+      <div class="bb__grid" style="margin-top:12px;">
+        <label class="bb__field">
+          <span class="bb__label">{t.linkSite}</span>
+          <input class="bb__input" name="link_site" type="url" placeholder="https://..." inputmode="url" />
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+        <label class="bb__field">
+          <span class="bb__label">{t.linkDiscord}</span>
+          <input class="bb__input" name="link_discord" placeholder="https://discord.gg/..." inputmode="url" />
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+        <label class="bb__field bb__field--full">
+          <span class="bb__label">{t.linkOther}</span>
+          <input class="bb__input" name="link_other" placeholder="https://..." inputmode="url" />
+          <span class="bb__err" aria-live="polite"></span>
+        </label>
+      </div>
+      <div class="bb__upload">
+        <div class="bb__uploadTop">
+          <div class="bb__label">{t.upload}</div>
+          <div class="muted small">{t.uploadHint}</div>
+        </div>
+        <input class="bb__input" type="file" disabled aria-disabled="true" />
+      </div>
+    </section>
+
+    <section class="bb__pane" data-bb-step-pane="4" hidden>
+      <div class="h3">{t.review}</div>
+      <div class="bb__summary" data-bb-summary>—</div>
+      <div class="bb__actions">
+        <button class="btn" type="button" data-bb-copy>{t.copy}</button>
+        <a class="btn btn-primary" href="#" target="_blank" rel="noreferrer" data-bb-wa>{t.sendWa}</a>
+        {CONTACT_EMAIL ? (
+          <a class="btn" href="#" data-bb-email>{t.sendEmail}</a>
+        ) : (
+          <button class="btn" type="button" disabled title={t.emailDisabled}>
+            {t.sendEmail}
+          </button>
+        )}
+      </div>
+      {!CONTACT_EMAIL ? <div class="muted small" style="margin-top:10px;">{t.emailDisabled}</div> : null}
+    </section>
+
+    <div class="bb__nav">
+      <button class="btn" type="button" data-bb-back>{t.back}</button>
+      <button class="btn btn-primary" type="button" data-bb-next>{t.next}</button>
+    </div>
+  </form>
+</section>
+
+<noscript>
+  <div class="glass card muted small" style="margin-top:12px;">
+    {locale === "en"
+      ? "JavaScript is required for the guided brief builder. You can still use the contact form or WhatsApp."
+      : "Se requiere JavaScript para el brief guiado. Igual puedes usar el formulario o WhatsApp."}
+    <a class="btn btn-primary" style="margin-left:10px;" href={`https://wa.me/${WHATSAPP_PHONE_E164}`} target="_blank" rel="noreferrer">
+      {locale === "en" ? "WhatsApp" : "WhatsApp"}
+    </a>
+  </div>
+</noscript>
+
+<script is:inline define:vars={{ STR: t, PHONE: WHATSAPP_PHONE_E164, EMAIL: CONTACT_EMAIL }}>
+  (function () {
+    const root = document.querySelector("[data-bb-form]")?.closest?.(".bb");
+    const form = document.querySelector("[data-bb-form]");
+    if (!root || !form) return;
+
+    const panes = Array.from(root.querySelectorAll("[data-bb-step-pane]"));
+    const chips = Array.from(root.querySelectorAll("[data-bb-chip]"));
+    const stepLabel = root.querySelector("[data-bb-step]");
+    const btnBack = root.querySelector("[data-bb-back]");
+    const btnNext = root.querySelector("[data-bb-next]");
+    const btnClear = root.querySelector("[data-bb-clear]");
+    const outSummary = root.querySelector("[data-bb-summary]");
+    const btnCopy = root.querySelector("[data-bb-copy]");
+    const aWa = root.querySelector("[data-bb-wa]");
+    const aEmail = root.querySelector("[data-bb-email]");
+
+    const STORAGE_KEY = `vexora_brief_v1_${document.body?.dataset?.locale || "es"}`;
+
+    const digitsOnly = (v) => String(v || "").replace(/\D+/g, "");
+    const normalizeDial = (v) => {
+      const d = digitsOnly(v);
+      return d ? `+${d}` : "";
+    };
+    const normalizeE164Like = (v) => {
+      const raw = String(v || "").trim();
+      if (!raw) return "";
+      if (raw.startsWith("+")) return `+${digitsOnly(raw)}`;
+      const d = digitsOnly(raw);
+      return d ? `+${d}` : "";
+    };
+
+    const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
+    const isPhoneish = (v) => /^\+\d{8,15}$/.test(normalizeE164Like(v));
+
+    function readDraft() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function writeDraft(data) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch {}
+    }
+
+    function setStep(n) {
+      const max = panes.length - 1;
+      const step = Math.min(max, Math.max(0, n));
+      panes.forEach((p) => (p.hidden = p.getAttribute("data-bb-step-pane") !== String(step)));
+      chips.forEach((c) => c.classList.toggle("is-on", c.getAttribute("data-bb-chip") === String(step)));
+      if (stepLabel) stepLabel.textContent = `${STR.step} ${step + 1} ${STR.of} ${panes.length} · ${STR.steps[step]}`;
+      if (btnBack) btnBack.disabled = step === 0;
+      if (btnNext) btnNext.hidden = step === max;
+      root.setAttribute("data-bb-step-active", String(step));
+      if (step === max) render();
+
+      // Focus first field of the active step (a11y + “feels responsive”)
+      const pane = root.querySelector(`[data-bb-step-pane="${step}"]`);
+      const first =
+        pane?.querySelector?.("input:not([type='hidden']):not([disabled]), textarea:not([disabled]), select:not([disabled])") || null;
+      if (first && typeof first.focus === "function") {
+        window.setTimeout(() => {
+          try {
+            first.focus();
+          } catch {}
+        }, 0);
+      }
+    }
+
+    function readValues() {
+      const fd = new FormData(form);
+      const services = fd.getAll("service").map(String);
+      const utm = (window.vexoraGetUTMs && typeof window.vexoraGetUTMs === "function" ? window.vexoraGetUTMs() : {}) || {};
+
+      // Prefer visible PhoneField inputs (country + national) to avoid relying on the hidden field being up-to-date.
+      const waFromPhoneField = (() => {
+        const root = form.querySelector('[data-pf-root][data-name="whatsapp"]');
+        if (!root) return "";
+        const countrySel = root.querySelector("[data-pf-country]");
+        const nat = root.querySelector("[data-pf-national]");
+        const dialInput = root.querySelector("[data-pf-dial]");
+        const natDigits = digitsOnly(nat?.value || "");
+        if (!natDigits) return "";
+
+        let dial = "";
+        if (countrySel?.value === "ZZ") {
+          dial = normalizeDial(dialInput?.value || "");
+        } else {
+          dial = normalizeDial(countrySel?.selectedOptions?.[0]?.dataset?.dial || "");
+        }
+        return dial ? `${dial}${natDigits}` : "";
+      })();
+
+      const waFallback = normalizeE164Like(String(fd.get("whatsapp") || ""));
+      return {
+        name: String(fd.get("name") || "").trim(),
+        company: String(fd.get("company") || "").trim(),
+        email: String(fd.get("email") || "").trim(),
+        whatsapp: waFromPhoneField || waFallback,
+        services,
+        objective: String(fd.get("objective") || "").trim(),
+        deadline: String(fd.get("deadline") || "").trim(),
+        budget: String(fd.get("budget") || "").trim(),
+        link_site: String(fd.get("link_site") || "").trim(),
+        link_discord: String(fd.get("link_discord") || "").trim(),
+        link_other: String(fd.get("link_other") || "").trim(),
+        utm
+      };
+    }
+
+    function hydrate(values) {
+      const set = (name, value) => {
+        const el = form.querySelector(`[name="${name}"]`);
+        if (el) el.value = value || "";
+      };
+      set("name", values.name);
+      set("company", values.company);
+      set("email", values.email);
+      // PhoneField manages its own sub-inputs; ensure hidden E.164 is set.
+      set("whatsapp", values.whatsapp);
+      set("objective", values.objective);
+      set("deadline", values.deadline);
+      set("budget", values.budget);
+      set("link_site", values.link_site);
+      set("link_discord", values.link_discord);
+      set("link_other", values.link_other);
+
+      const boxes = Array.from(form.querySelectorAll('input[type="checkbox"][name="service"]'));
+      for (const box of boxes) box.checked = (values.services || []).includes(box.value);
+    }
+
+    function clearErrors() {
+      const errs = Array.from(root.querySelectorAll(".bb__err"));
+      errs.forEach((e) => (e.textContent = ""));
+      const line = root.querySelector("[data-bb-err]");
+      if (line) line.textContent = "";
+      const line2 = root.querySelector("[data-bb-err-contact]");
+      if (line2) line2.textContent = "";
+    }
+
+    function setErr(field, msg) {
+      const err = field.querySelector(".bb__err");
+      if (err) err.textContent = msg || "";
+      field.classList.toggle("hasErr", Boolean(msg));
+    }
+
+    function validateStep(step) {
+      clearErrors();
+      const v = readValues();
+      let ok = true;
+
+      if (step === 0) {
+        const nameField = form.querySelector('[name="name"]')?.closest?.(".bb__field");
+        if (!v.name || v.name.length < 2) {
+          if (nameField) setErr(nameField, STR.required);
+          ok = false;
+        }
+        const emailOk = v.email ? isEmail(v.email) : false;
+        const phoneOk = v.whatsapp ? isPhoneish(v.whatsapp) : false;
+        if (v.email && !emailOk) {
+          const f = form.querySelector('[name="email"]')?.closest?.(".bb__field");
+          if (f) setErr(f, STR.invalidEmail);
+          ok = false;
+        }
+        if (v.whatsapp && !phoneOk) {
+          const f = form.querySelector('[name="whatsapp"]')?.closest?.(".bb__field");
+          if (f) setErr(f, STR.invalidPhone);
+          ok = false;
+        }
+        if (!emailOk && !phoneOk) {
+          const line = root.querySelector("[data-bb-err-contact]");
+          if (line) line.textContent = STR.contactHint;
+          ok = false;
+        }
+      }
+
+      if (step === 1) {
+        if (!v.services.length) {
+          const line = root.querySelector("[data-bb-err]");
+          if (line) line.textContent = STR.required;
+          ok = false;
+        }
+      }
+
+      if (step === 2) {
+        const objectiveField = form.querySelector('[name="objective"]')?.closest?.(".bb__field");
+        if (!v.objective || v.objective.length < 10) {
+          if (objectiveField) setErr(objectiveField, STR.required);
+          ok = false;
+        }
+        const budgetField = form.querySelector('[name="budget"]')?.closest?.(".bb__field");
+        if (!v.budget) {
+          if (budgetField) setErr(budgetField, STR.required);
+          ok = false;
+        }
+      }
+
+      return ok;
+    }
+
+    function buildSummary(v) {
+      const loc = document.body?.dataset?.locale || "es";
+      const lines = [];
+      lines.push(loc === "en" ? "Vexora brief" : "Brief para Vexora");
+      lines.push(`Name/Company: ${[v.name, v.company].filter(Boolean).join(" · ") || "—"}`);
+      lines.push(`Contact: ${[v.whatsapp && `WA: ${v.whatsapp}`, v.email && `Email: ${v.email}`].filter(Boolean).join(" · ") || "—"}`);
+      lines.push(`Service: ${(v.services || []).join(", ") || "—"}`);
+      lines.push(`Goal: ${v.objective || "—"}`);
+      lines.push(`Deadline: ${v.deadline || "—"}`);
+      lines.push(`Budget: ${v.budget || "—"}`);
+      const links = [v.link_site && `Site: ${v.link_site}`, v.link_discord && `Discord: ${v.link_discord}`, v.link_other && `Other: ${v.link_other}`]
+        .filter(Boolean)
+        .join(" · ");
+      lines.push(`Links: ${links || "—"}`);
+
+      const ident =
+        window.vexoraGetIdentity && typeof window.vexoraGetIdentity === "function" ? window.vexoraGetIdentity() : null;
+      if (ident && (ident.email || ident.user_id)) {
+        lines.push(`Account: ${ident.email || ident.user_id}`);
+      }
+
+      const utm = v.utm || {};
+      const hasUtm = Boolean(utm.utm_source || utm.utm_campaign || utm.utm_medium || utm.utm_content || utm.utm_term);
+      lines.push(hasUtm ? `Source: ${(utm.utm_source || "—")}/${(utm.utm_campaign || "—")}` : `Source: ${(loc === "en" ? "(no UTMs)" : "(sin UTMs)")}`);
+      return lines.join("\\n");
+    }
+
+    function render() {
+      const v = readValues();
+      writeDraft(v);
+      const summary = buildSummary(v);
+      if (outSummary) outSummary.textContent = summary;
+
+      const waText = encodeURIComponent(summary);
+      if (aWa) aWa.setAttribute("href", `https://wa.me/${PHONE}?text=${waText}`);
+
+      if (aEmail && EMAIL) {
+        const subject = encodeURIComponent(`Brief — ${v.name || "Vexora"}`);
+        const body = encodeURIComponent(summary);
+        aEmail.setAttribute("href", `mailto:${EMAIL}?subject=${subject}&body=${body}`);
+      }
+    }
+
+    async function copySummary() {
+      const summary = String(outSummary?.textContent || "");
+      if (!summary) return false;
+      try {
+        await navigator.clipboard.writeText(summary);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    btnNext?.addEventListener("click", () => {
+      const step = Number(root.getAttribute("data-bb-step-active") || "0");
+      if (!validateStep(step)) return;
+      setStep(step + 1);
+    });
+    btnBack?.addEventListener("click", () => {
+      const step = Number(root.getAttribute("data-bb-step-active") || "0");
+      setStep(step - 1);
+    });
+
+    form.addEventListener("input", () => {
+      const v = readValues();
+      writeDraft(v);
+      const step = Number(root.getAttribute("data-bb-step-active") || "0");
+      if (step === panes.length - 1) render();
+    });
+
+    btnCopy?.addEventListener("click", async () => {
+      if (await copySummary()) {
+        btnCopy.textContent = STR.copied;
+        window.setTimeout(() => (btnCopy.textContent = STR.copy), 1200);
+      }
+    });
+
+    aWa?.addEventListener("click", () => {
+      copySummary();
+      try {
+        window.vexoraTrack?.("submit_brief", { channel: "whatsapp" });
+      } catch {}
+    });
+
+    aEmail?.addEventListener("click", () => {
+      copySummary();
+      try {
+        window.vexoraTrack?.("submit_brief", { channel: "email" });
+      } catch {}
+    });
+
+    btnClear?.addEventListener("click", () => {
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch {}
+      form.reset();
+      clearErrors();
+      setStep(0);
+    });
+
+    // init
+    const draft = readDraft() || {};
+    let auth = null;
+    try{
+      const raw = window.localStorage.getItem("vexora_auth_v1");
+      auth = raw ? JSON.parse(raw) : null;
+    }catch{}
+    if(auth && typeof auth === "object"){
+      if(!draft.email && typeof auth.email === "string") draft.email = auth.email;
+      if(!draft.name && typeof auth.username === "string" && auth.username.trim()) draft.name = auth.username.trim();
+    }
+    hydrate(draft);
+    setStep(0);
+  })();
+</script>
+
+<style>
+  .bb__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .bb__headActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .small {
+    font-size: 13px;
+  }
+
+  .bb__steps {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .bb__chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0.75;
+  }
+  .bb__chip.is-on {
+    opacity: 1;
+    border-color: rgba(139, 92, 255, 0.34);
+    background: linear-gradient(180deg, rgba(139, 92, 255, 0.18), rgba(255, 255, 255, 0.03));
+  }
+  .bb__chip .n {
+    width: 22px;
+    height: 22px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 12px;
+  }
+  .bb__chip .l {
+    font-size: 12px;
+  }
+
+  .bb__form {
+    margin-top: 14px;
+  }
+  .bb__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .bb__field {
+    display: grid;
+    gap: 8px;
+  }
+  .bb__field--full {
+    grid-column: 1 / -1;
+  }
+  .bb__label {
+    font-size: 13px;
+    color: rgba(237, 237, 243, 0.82);
+  }
+  .bb__input {
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .bb__err {
+    font-size: 12px;
+    color: rgba(255, 140, 140, 0.92);
+    min-height: 14px;
+  }
+  .bb__field.hasErr .bb__input {
+    border-color: rgba(255, 140, 140, 0.55);
+  }
+  .bb__field.hasErr :global(.pf__select),
+  .bb__field.hasErr :global(.pf__input) {
+    border-color: rgba(255, 140, 140, 0.55);
+  }
+  .bb__errLine {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255, 140, 140, 0.92);
+    min-height: 14px;
+  }
+
+  .bb__checks {
+    display: grid;
+    gap: 10px;
+  }
+  .bb__check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .bb__check input {
+    accent-color: var(--accent-1);
+  }
+
+  .bb__upload {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .bb__uploadTop {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .bb__summary {
+    margin-top: 12px;
+    white-space: pre-wrap;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.12);
+    font-size: 13px;
+    line-height: 1.35;
+    color: rgba(237, 237, 243, 0.9);
+  }
+
+  .bb__actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .bb__nav {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: sticky;
+    bottom: 0;
+    background: rgba(7, 7, 11, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding-bottom: 10px;
+  }
+
+  @media (max-width: 980px) {
+    .bb__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

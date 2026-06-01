@@ -1,0 +1,205 @@
+---
+import type { Locale } from "@/lib/i18n";
+import { localeFromPath } from "@/lib/i18n";
+
+type Props = { locale?: Locale };
+const { locale: propLocale } = Astro.props;
+const locale = propLocale ?? localeFromPath(Astro.url.pathname);
+const t = {
+  aria: locale === "en" ? "Live hours" : "Horarios en tiempo real",
+  title: locale === "en" ? "Live status" : "Estado en tiempo real",
+  sub:
+    locale === "en"
+      ? "Updates every 30s. Base: CDMX (Mon–Fri 07:00–23:00 · Sat 10:00–20:00 · Sun closed)."
+      : "Actualiza cada 30s. Base: CDMX (L-V 07:00–23:00 · Sáb 10:00–20:00 · Dom cerrado).",
+  calc: locale === "en" ? "Calculating…" : "Calculando…",
+  note:
+    locale === "en"
+      ? "We’re closed on Sundays. If you're outside business hours, you can still message us — we reply next business day."
+      : "No atendemos domingos. Si estas fuera de horario, igual puedes escribir: respondemos el siguiente bloque habil.",
+  openNow: locale === "en" ? "Open now" : "Abierto ahora",
+  closedNow: locale === "en" ? "Closed now" : "Cerrado ahora",
+  sundayClosed: locale === "en" ? "Sunday: closed" : "Domingo: cerrado",
+  fmtLocale: locale === "en" ? "en-US" : "es-MX",
+  nextDaySuffix: locale === "en" ? " (+1)" : " (+1)"
+};
+---
+<section class="hours glass" aria-label={t.aria}>
+  <div class="hours__head">
+    <div>
+      <div class="hours__title">{t.title}</div>
+      <div class="hours__sub muted">{t.sub}</div>
+    </div>
+    <div class="pill" data-hours-status>
+      <span class="dot" aria-hidden="true"></span>
+      <span data-hours-status-text>{t.calc}</span>
+    </div>
+  </div>
+
+  <div class="hours__grid" role="list">
+    <div class="hours__item" role="listitem">
+      <div class="city">CDMX</div>
+      <div class="time" data-hours-time="America/Mexico_City">--:--</div>
+      <div class="meta muted" data-hours-window="America/Mexico_City">--</div>
+    </div>
+    <div class="hours__item" role="listitem">
+      <div class="city">Madrid</div>
+      <div class="time" data-hours-time="Europe/Madrid">--:--</div>
+      <div class="meta muted" data-hours-window="Europe/Madrid">--</div>
+    </div>
+    <div class="hours__item" role="listitem">
+      <div class="city">Los Angeles</div>
+      <div class="time" data-hours-time="America/Los_Angeles">--:--</div>
+      <div class="meta muted" data-hours-window="America/Los_Angeles">--</div>
+    </div>
+  </div>
+
+  <p class="note muted">
+    {t.note}
+  </p>
+</section>
+
+<script is:inline define:vars={{ STR: t }}>
+  (function () {
+    const TZ_CDMX = "America/Mexico_City";
+    const ZONES = [
+      { label: "CDMX", tz: "America/Mexico_City" },
+      { label: "Madrid", tz: "Europe/Madrid" },
+      { label: "Los Angeles", tz: "America/Los_Angeles" }
+    ];
+
+    const statusWrap = document.querySelector("[data-hours-status]");
+    const statusText = document.querySelector("[data-hours-status-text]");
+    const dot = statusWrap ? statusWrap.querySelector(".dot") : null;
+
+    function partsInTZ(date, timeZone) {
+      const dtf = new Intl.DateTimeFormat("en-CA", {
+        timeZone,
+        hour12: false,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      const parts = dtf.formatToParts(date);
+      const out = {};
+      for (const p of parts) out[p.type] = p.value;
+      return out;
+    }
+
+    function tzOffsetMinutes(date, timeZone) {
+      // Positive when tz is ahead of UTC.
+      const p = partsInTZ(date, timeZone);
+      const asUTC = Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day), Number(p.hour), Number(p.minute), Number(p.second));
+      return (asUTC - date.getTime()) / 60000;
+    }
+
+    function zonedTimeToUtc(y, m, d, hh, mm, timeZone) {
+      // Iterative correction to account for DST transitions.
+      let t = Date.UTC(y, m - 1, d, hh, mm, 0);
+      for (let i = 0; i < 3; i++) {
+        const off = tzOffsetMinutes(new Date(t), timeZone);
+        t = Date.UTC(y, m - 1, d, hh, mm, 0) - off * 60000;
+      }
+      return new Date(t);
+    }
+
+    function scheduleForCDMX(date) {
+      const p = partsInTZ(date, TZ_CDMX);
+      const wd = p.weekday; // Mon, Tue...
+      const y = Number(p.year), m = Number(p.month), d = Number(p.day);
+
+      if (wd === "Sun") return { open: false, y, m, d };
+      if (wd === "Sat") return { open: true, y, m, d, openH: 10, openM: 0, closeH: 20, closeM: 0 };
+      return { open: true, y, m, d, openH: 7, openM: 0, closeH: 23, closeM: 0 };
+    }
+
+    function fmtTime(date, timeZone) {
+      return new Intl.DateTimeFormat(STR.fmtLocale, { timeZone, hour: "2-digit", minute: "2-digit" }).format(date);
+    }
+
+    function fmtNow(date, timeZone) {
+      return new Intl.DateTimeFormat(STR.fmtLocale, { timeZone, hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(date);
+    }
+
+    function update() {
+      const now = new Date();
+      const sched = scheduleForCDMX(now);
+
+      let isOpen = false;
+      let openInstant = null;
+      let closeInstant = null;
+
+      if (sched.open) {
+        openInstant = zonedTimeToUtc(sched.y, sched.m, sched.d, sched.openH, sched.openM, TZ_CDMX);
+        closeInstant = zonedTimeToUtc(sched.y, sched.m, sched.d, sched.closeH, sched.closeM, TZ_CDMX);
+        isOpen = now >= openInstant && now < closeInstant;
+      }
+
+      if (statusText) statusText.textContent = isOpen ? STR.openNow : STR.closedNow;
+      if (dot) dot.style.background = isOpen ? "rgba(106,228,255,.95)" : "rgba(255,255,255,.28)";
+      if (statusWrap) statusWrap.style.borderColor = isOpen ? "rgba(106,228,255,.32)" : "rgba(255,255,255,.14)";
+
+      for (const z of ZONES) {
+        const tEl = document.querySelector(`[data-hours-time="${z.tz}"]`);
+        if (tEl) tEl.textContent = fmtNow(now, z.tz);
+        const wEl = document.querySelector(`[data-hours-window="${z.tz}"]`);
+        if (!wEl) continue;
+        if (!sched.open || !openInstant || !closeInstant) {
+          wEl.textContent = STR.sundayClosed;
+        } else {
+          const openP = partsInTZ(openInstant, z.tz);
+          const closeP = partsInTZ(closeInstant, z.tz);
+          const crossesDay =
+            openP.year !== closeP.year || openP.month !== closeP.month || openP.day !== closeP.day;
+          wEl.textContent = `${fmtTime(openInstant, z.tz)}–${fmtTime(closeInstant, z.tz)}${crossesDay ? STR.nextDaySuffix : ""}`;
+        }
+      }
+    }
+
+    update();
+    window.setInterval(update, 30000);
+  })();
+</script>
+
+<style>
+  .hours{ padding:18px; }
+  .hours__head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom: 14px;
+  }
+  .hours__title{
+    font-family: var(--font-display);
+    font-weight:600;
+  }
+  .hours__sub{ font-size: 13px; margin-top: 2px; }
+  .dot{
+    width:8px; height:8px; border-radius:99px;
+    background: rgba(255,255,255,.28);
+    box-shadow: 0 0 18px rgba(106,228,255,.28);
+  }
+  .hours__grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .hours__item{
+    padding: 14px;
+    border-radius: 16px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+  }
+  .city{ font-weight:600; font-family: var(--font-display); }
+  .time{ font-size: 22px; letter-spacing:-.02em; margin-top: 6px; }
+  .meta{ font-size: 13px; margin-top: 6px; }
+  .note{ font-size: 13px; margin: 14px 0 0; }
+  @media (max-width: 980px){
+    .hours__grid{ grid-template-columns:1fr; }
+  }
+</style>

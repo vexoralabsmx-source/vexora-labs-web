@@ -1,0 +1,113 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import FAQAccordion from "@/components/FAQAccordion.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+
+const items = [
+  {
+    q: "What does a quote include?",
+    a: "Goal, scope, deliverables, timelines, risks, and options (package or custom). If something is uncertain, we make it explicit."
+  },
+  {
+    q: "Do you work with contracts and invoicing?",
+    a: "We can work with a simple agreement focused on deliverables and timeline. If you need invoicing, we coordinate case by case."
+  },
+  {
+    q: "Do you build custom Discord bots?",
+    a: "Yes: from advanced configuration with existing bots to custom bots. Always with auditability, clear roles, and no abuse."
+  },
+  {
+    q: "Can you help with anti-raid and community security?",
+    a: "Yes: layered hardening, rate limits, verification, quarantine, logs, and playbooks. We don’t do offensive or illegal actions."
+  },
+  {
+    q: "WhatsApp + AI: is it legal?",
+    a: "It depends on the approach. We propose compliant integrations (WhatsApp Business API) and consent-based flows. No spam."
+  },
+  {
+    q: "How long does a website take?",
+    a: "A premium landing page usually takes 10–18 business days. Multi-page sites or complex integrations can take longer."
+  },
+  {
+    q: "Can you improve an existing website?",
+    a: "Yes. We audit performance/SEO/UX and propose a plan: quick wins and staged refactors."
+  },
+  {
+    q: "What if policies or APIs change?",
+    a: "We let you know and propose a fix or alternative. That’s why we deliver documentation and recommend monthly support if it’s critical."
+  },
+  {
+    q: "Do you offer support after delivery?",
+    a: "Yes. There’s a post-delivery adjustment window and an optional monthly support plan (maintenance, improvements, basic monitoring)."
+  },
+  {
+    q: "Can you guarantee sales or growth?",
+    a: "No. We can improve conversion, experience, and efficiency, but results depend on offer, market, and operations."
+  }
+];
+---
+<BaseLayout
+  page="faq"
+  title={`FAQ — ${BRAND}`}
+  description="Frequently asked questions about Vexora Labs: process, timelines, pricing, security, Discord, Minecraft, and WhatsApp + AI."
+  canonicalPath="/en/faq/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">FAQ</div>
+        <h1 class="h1" style="margin-top:14px;">Straight answers.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:78ch;">
+          If your question isn’t here, message us on WhatsApp and we’ll answer clearly.
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("faq", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+        <a class="btn" href={routeFor("contacto", "en")}>Contact</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <FAQAccordion items={items} />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card end" data-reveal>
+      <div>
+        <h2 class="h2">Ready to move forward?</h2>
+        <p class="muted" style="margin:10px 0 0;">
+          Share your goal + timeline + rough budget, and we’ll propose the next step.
+        </p>
+      </div>
+      <div class="end__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("faq", "en")} target="_blank" rel="noreferrer">Get a quote on WhatsApp</a>
+        <a class="btn" href={routeFor("precios", "en")}>View pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .end{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .end__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+  </style>
+</BaseLayout>
+

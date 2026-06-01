@@ -1,0 +1,158 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { CASE_STUDIES } from "@/lib/caseStudies";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+---
+<BaseLayout
+  page="portafolio"
+  title={`Portafolio — ${BRAND}`}
+  description="Casos de Vexora Labs con metricas y entregables (sin inventar marcas reales): WhatsApp + IA, Discord systems y Minecraft infra."
+  canonicalPath="/portafolio/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">Portafolio</div>
+        <h1 class="h1" style="margin-top:14px;">Impacto medible. Entrega operable.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:78ch;">
+          Para no inventar marcas ni prometer imposibles, mostramos el tipo de cliente, el problema, el enfoque y la metrica
+          que se busca mover. Cada caso termina en checklist y documentacion.
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("portafolio")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <a class="btn" href="/servicios/">Ver servicios</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container grid">
+      {CASE_STUDIES.map((c) => (
+        <article class="case glass card" data-reveal>
+          <div class="case__top">
+            <div>
+              <div class="case__type">{c.type}</div>
+              <h2 class="h2" style="margin-top:10px;">{c.title}</h2>
+            </div>
+            <a class="btn btn-primary" href={getWhatsAppLink("portafolio")} target="_blank" rel="noreferrer">Quiero algo asi</a>
+          </div>
+          <div class="case__grid">
+            <div class="block">
+              <div class="block__k">Problema</div>
+              <p class="muted" style="margin:10px 0 0;">{c.problem}</p>
+            </div>
+            <div class="block">
+              <div class="block__k">Solucion</div>
+              <p class="muted" style="margin:10px 0 0;">{c.solution}</p>
+            </div>
+            <div class="block">
+              <div class="block__k">Metricas</div>
+              <ul class="list">
+                {c.metrics.map((m) => (
+                  <li>{m}</li>
+                ))}
+              </ul>
+            </div>
+            <div class="block">
+              <div class="block__k">Entregables/stack</div>
+              <div class="tags">
+                {c.stack.map((t) => (
+                  <span class="tag">{t}</span>
+                ))}
+              </div>
+              <div class="muted small" style="margin-top:10px;">
+                Medimos lo que importa. Si no hay metricas, no hay iteracion.
+              </div>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card end" data-reveal>
+      <div>
+        <h2 class="h2">Quieres un caso similar para tu negocio o comunidad?</h2>
+        <p class="muted" style="margin:10px 0 0;">
+          Escribe con contexto. Te respondemos con alcance, tiempos y opciones.
+        </p>
+      </div>
+      <div class="end__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("portafolio")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <a class="btn" href="/contacto/">Enviar brief</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .case{ padding: 22px; }
+    .case__top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom: 14px;
+    }
+    .case__type{
+      display:inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: rgba(237,237,243,.80);
+      font-size: 13px;
+    }
+    .case__grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .block{
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 16px;
+    }
+    .block__k{
+      font-family: var(--font-display);
+      font-weight:650;
+      letter-spacing:-.02em;
+    }
+    .list{ margin: 12px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 8px 0; }
+    .tags{ display:flex; gap:8px; flex-wrap:wrap; margin-top: 12px; }
+    .tag{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      font-size: 13px;
+      color: rgba(237,237,243,.80);
+    }
+    .small{ font-size: 13px; }
+    .end{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .end__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    @media (max-width: 980px){
+      .case__grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

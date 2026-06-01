@@ -1,0 +1,228 @@
+---
+import { PHONE_COUNTRIES } from "@/lib/phone";
+import { localeFromPath, type Locale } from "@/lib/i18n";
+
+type Props = {
+  name: string; // final field name (hidden, E.164)
+  label: string;
+  required?: boolean;
+  locale?: Locale;
+  defaultIso2?: string; // e.g. "MX"
+  help?: string;
+};
+
+const { name, label, required = false, defaultIso2 = "MX", help, locale: propLocale } = Astro.props;
+const locale = propLocale ?? localeFromPath(Astro.url.pathname);
+
+const t = {
+  country: locale === "en" ? "Country" : "País",
+  number: locale === "en" ? "Number" : "Número",
+  placeholder: locale === "en" ? "10 digits" : "10 dígitos",
+  formatHint:
+    locale === "en"
+      ? "We’ll format it as WhatsApp-ready (+countrycode...)."
+      : "Lo formateamos para WhatsApp (+código de país...)."
+};
+---
+
+<div class="pf" data-pf-root data-name={name} data-default-iso2={defaultIso2}>
+  <div class="pf__labelRow">
+    <div class="pf__label">
+      {label}{required ? <span class="pf__req" aria-hidden="true">*</span> : null}
+    </div>
+    <div class="pf__meta muted small" data-pf-preview>—</div>
+  </div>
+
+  <div class="pf__row">
+    <label class="pf__field">
+      <span class="srOnly">{t.country}</span>
+      <select class="pf__select" data-pf-country>
+        {PHONE_COUNTRIES.map((c) => (
+          <option value={c.iso2} data-dial={c.dial} selected={c.iso2 === defaultIso2}>
+            {c.dial} · {locale === "en" ? c.labelEn : c.labelEs}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    <label class="pf__field" data-pf-dial-wrap hidden>
+      <span class="srOnly">{locale === "en" ? "Dial code" : "Código país"}</span>
+      <input
+        class="pf__input"
+        data-pf-dial
+        inputmode="tel"
+        autocomplete="off"
+        autocapitalize="none"
+        spellcheck="false"
+        placeholder="+52"
+        aria-label={locale === "en" ? "Dial code" : "Código país"}
+      />
+    </label>
+
+    <label class="pf__field pf__field--grow">
+      <span class="srOnly">{t.number}</span>
+      <input
+        class="pf__input"
+        data-pf-national
+        inputmode="tel"
+        autocomplete="tel"
+        autocapitalize="none"
+        spellcheck="false"
+        placeholder={t.placeholder}
+        aria-label={t.number}
+      />
+    </label>
+  </div>
+
+  <input
+    type="hidden"
+    name={name}
+    data-pf-e164
+    autocomplete="off"
+    data-1p-ignore="true"
+    data-lpignore="true"
+  />
+
+  <div class="pf__help muted small">{help ?? t.formatHint}</div>
+</div>
+
+<script is:inline define:vars={{ COUNTRIES: PHONE_COUNTRIES }}>
+  (function () {
+    const roots = Array.from(document.querySelectorAll("[data-pf-root]"));
+    if (!roots.length) return;
+
+    const cssEscape =
+      (window.CSS && typeof window.CSS.escape === "function" && window.CSS.escape) ||
+      ((s) => String(s || "").replace(/["\\]/g, "\\$&"));
+
+    for (const root of roots) {
+      const countrySel = root.querySelector("[data-pf-country]");
+      const national = root.querySelector("[data-pf-national]");
+      const dialWrap = root.querySelector("[data-pf-dial-wrap]");
+      const dialInput = root.querySelector("[data-pf-dial]");
+      const e164 = root.querySelector("[data-pf-e164]");
+      const preview = root.querySelector("[data-pf-preview]");
+
+      const name = root.getAttribute("data-name") || "";
+      const defIso2 = root.getAttribute("data-default-iso2") || "MX";
+
+      const digitsOnly = (v) => String(v || "").replace(/\D+/g, "");
+      const normalizeDial = (d) => {
+        const digits = digitsOnly(d);
+        return digits ? `+${digits}` : "";
+      };
+
+      const getCountry = () => {
+        const iso2 = countrySel?.value || defIso2;
+        return (
+          (Array.isArray(COUNTRIES) ? COUNTRIES : []).find((c) => c.iso2 === iso2) ||
+          (Array.isArray(COUNTRIES) ? COUNTRIES[0] : null)
+        );
+      };
+
+      const isManual = () => (countrySel?.value || defIso2) === "ZZ";
+
+      const detectFromE164 = (value) => {
+        const v = String(value || "").trim();
+        if (!v.startsWith("+")) return null;
+        const sorted = [...(Array.isArray(COUNTRIES) ? COUNTRIES : [])].sort(
+          (a, b) => String(b.dial).length - String(a.dial).length
+        );
+        for (const c of sorted) if (c.iso2 !== "ZZ" && v.startsWith(c.dial)) return c;
+        return null;
+      };
+
+      const setPreview = (c, natDigits) => {
+        const dial = isManual() ? normalizeDial(dialInput?.value || "") : c?.dial || "";
+        const full = dial && natDigits ? `${dial}${natDigits}` : "—";
+        if (preview) preview.textContent = full;
+      };
+
+      const sync = () => {
+        const c = getCountry();
+        const nat = digitsOnly(national?.value || "");
+        const dial = isManual()
+          ? normalizeDial(dialInput?.value || "")
+          : normalizeDial(countrySel?.selectedOptions?.[0]?.dataset?.dial || c?.dial || "");
+        const val = dial && nat ? `${dial}${nat}` : "";
+        if (e164) e164.value = val;
+        setPreview(c, nat);
+
+        if (dialWrap) dialWrap.hidden = !isManual();
+      };
+
+      // Backward compat: if page already stored a "+..." value in hidden field, parse it.
+      const initial = (e164 && e164.value) || "";
+      if (!initial) {
+        const legacy = name ? document.querySelector(`input[name="${cssEscape(name)}"]:not([data-pf-e164])`) : null;
+        if (legacy && legacy.value) {
+          const raw = String(legacy.value || "").trim();
+          if (raw.startsWith("+")) {
+            if (e164) e164.value = raw;
+          } else {
+            const nat = digitsOnly(raw);
+            if (e164) e164.value = `+52${nat}`;
+          }
+          try { legacy.remove(); } catch {}
+        }
+      }
+
+      const boot = () => {
+        const val = (e164 && e164.value) ? String(e164.value).trim() : "";
+        if (val.startsWith("+")) {
+          const c = detectFromE164(val);
+          if (c && countrySel) countrySel.value = c.iso2;
+          if (c && national) national.value = digitsOnly(val.slice(c.dial.length));
+          if (!c && countrySel) countrySel.value = "ZZ";
+        }
+        sync();
+      };
+
+      countrySel?.addEventListener("change", sync);
+      dialInput?.addEventListener("input", sync);
+      national?.addEventListener("input", sync);
+      boot();
+    }
+  })();
+</script>
+
+<style>
+  .srOnly{
+    position:absolute;
+    width:1px; height:1px;
+    padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0);
+    white-space:nowrap; border:0;
+  }
+  .pf{ display:grid; gap:8px; }
+  .pf__labelRow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .pf__label{ font-size: 13px; color: rgba(237,237,243,.82); }
+  .pf__req{ color: rgba(255,140,140,.92); margin-left: 4px; }
+  .small{ font-size: 13px; }
+  .pf__row{ display:flex; gap:10px; align-items:stretch; }
+  .pf__field{ display:block; }
+  .pf__field--grow{ flex: 1; }
+  .pf__select{
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .pf__input{
+    width:100%;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .pf__help{ font-size: 12px; }
+
+  @media (max-width: 520px){
+    .pf__row{ flex-direction:column; }
+  }
+</style>

@@ -1,0 +1,124 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+---
+<BaseLayout
+  page="seguridad"
+  title={`Seguridad y etica — ${BRAND}`}
+  description="Politica simple de seguridad, privacidad y etica. Practicas basicas, cumplimiento razonable y enfoque en confianza. Sin hacks ni spam."
+  canonicalPath="/seguridad-etica/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">Seguridad y etica</div>
+        <h1 class="h1" style="margin-top:14px;">Confianza como requisito.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:80ch;">
+          Vexora Labs construye infraestructura digital. Eso implica responsabilidad. Esta pagina explica limites, practicas
+          basicas y como cuidamos tu informacion sin inventar certificaciones.
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("seguridad")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <a class="btn" href="/contacto/">Contacto</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container grid2">
+      <article class="glass card" data-reveal>
+        <h2 class="h2">Lo que NO hacemos</h2>
+        <ul class="list">
+          <li>Hacks, exploits, doxxing, phishing o acceso no autorizado.</li>
+          <li>Spam, scraping sin consentimiento o envio masivo no solicitado.</li>
+          <li>Bypass de politicas (WhatsApp/Discord/hosting/proveedores).</li>
+          <li>Ingenieria social para obtener accesos.</li>
+        </ul>
+        <p class="muted small" style="margin:12px 0 0;">
+          Si un requerimiento implica daño, abuso o ilegalidad, lo rechazamos y proponemos alternativas legitimas.
+        </p>
+      </article>
+
+      <article class="glass card" data-reveal>
+        <h2 class="h2">Privacidad (simple y honesta)</h2>
+        <ul class="list">
+          <li>Guardamos lo minimo necesario para cotizar y dar soporte (nombre, contacto, brief).</li>
+          <li>No vendemos tu informacion.</li>
+          <li>Compartimos datos solo si es necesario para operar (ej. proveedor WABA) y con tu conocimiento.</li>
+          <li>Preferimos accesos temporales y con menor privilegio.</li>
+        </ul>
+        <p class="muted small" style="margin:12px 0 0;">
+          Si necesitas requisitos especificos (NDA, retencion, permisos), lo definimos por escrito.
+        </p>
+      </article>
+
+      <article class="glass card" data-reveal>
+        <h2 class="h2">WhatsApp + IA (practicas permitidas)</h2>
+        <ul class="list">
+          <li>Recomendamos WhatsApp Business API con proveedor autorizado.</li>
+          <li>Flujos con consentimiento, opt-out y handoff humano cuando aplique.</li>
+          <li>Respuestas asistidas por IA con guardrails (que decir / que no decir).</li>
+          <li>Metricas para controlar calidad, no solo volumen.</li>
+        </ul>
+      </article>
+
+      <article class="glass card" data-reveal>
+        <h2 class="h2">Buenas practicas operativas</h2>
+        <ul class="list">
+          <li>Checklist de entrega y validacion.</li>
+          <li>Backups y prueba de restauracion (cuando aplica).</li>
+          <li>Logs auditables para comunidades (Discord) y cambios controlados.</li>
+          <li>Documentacion y runbook para operar sin depender de nosotros.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card end" data-reveal>
+      <div>
+        <h2 class="h2">Si tu proyecto es sensible, mejor.</h2>
+        <p class="muted" style="margin:10px 0 0;">
+          Definimos permisos, acceso y limites desde el dia 1. La seguridad no es una "fase": es el baseline.
+        </p>
+      </div>
+      <div class="end__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("seguridad")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <a class="btn" href="/sobre/">Ver proceso</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 10px 0; }
+    .small{ font-size: 13px; }
+    .end{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .end__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    @media (max-width: 980px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+  </style>
+</BaseLayout>
+

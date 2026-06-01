@@ -1,0 +1,222 @@
+---
+import { getWhatsAppLink, type PageKey } from "@/lib/whatsapp";
+import { localeFromPath, type Locale } from "@/lib/i18n";
+
+type Props = { page: PageKey };
+const { page } = Astro.props;
+const locale: Locale = localeFromPath(Astro.url.pathname);
+const t = {
+  aria: locale === "en" ? "Contact form" : "Formulario de contacto",
+  title:
+    locale === "en"
+      ? "Tell us the goal. We’ll design the system."
+      : "Cuéntanos el objetivo. Nosotros diseñamos el sistema.",
+  lead:
+    locale === "en"
+      ? "Replies on business days. If it’s urgent, use WhatsApp — it’s the fastest channel."
+      : "Respuesta en dias habiles. Si urge, usa WhatsApp: es el canal mas rapido.",
+  quote: locale === "en" ? "Get a quote on WhatsApp" : "Cotizar por WhatsApp",
+  name: locale === "en" ? "Name" : "Nombre",
+  namePh: locale === "en" ? "Your name" : "Tu nombre",
+  contact: locale === "en" ? "WhatsApp or Email" : "WhatsApp o Email",
+  contactPh: locale === "en" ? "E.g. +1 555 555 5555 / email@domain.com" : "Ej: +52 220 330 9762 / correo@dominio.com",
+  service: locale === "en" ? "Service" : "Servicio",
+  select: locale === "en" ? "Select" : "Selecciona",
+  budget: locale === "en" ? "Budget (approx.)" : "Presupuesto (aprox.)",
+  budgetNone: locale === "en" ? "Not defined" : "No definido",
+  message: locale === "en" ? "Message" : "Mensaje",
+  messagePh:
+    locale === "en"
+      ? "Goal, timeline, context, links, constraints…"
+      : "Objetivo, fecha, contexto, links, restricciones…",
+  send: locale === "en" ? "Send" : "Enviar",
+  consent:
+    locale === "en"
+      ? "By sending, you agree we use your data only for quoting and support. We don’t sell your information."
+      : "Al enviar aceptas que usemos tus datos solo para cotizacion y soporte. No vendemos tu informacion.",
+  humanLabel:
+    locale === "en"
+      ? "If you’re human, leave this empty:"
+      : "Si eres humano, deja esto vacio:",
+  invalidContact:
+    locale === "en"
+      ? "Enter a valid WhatsApp number or email."
+      : "Escribe un WhatsApp o un email valido.",
+  required: locale === "en" ? "Required field." : "Campo requerido."
+};
+---
+<section class="form glass card" aria-label={t.aria}>
+  <div class="form__head">
+    <div>
+      <div class="h2">{t.title}</div>
+      <p class="muted" style="margin:10px 0 0;">
+        {t.lead}
+      </p>
+    </div>
+    <a class="btn btn-primary" href={getWhatsAppLink(page, locale)} target="_blank" rel="noreferrer">{t.quote}</a>
+  </div>
+
+  <form class="form__grid" name="contacto" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" novalidate>
+    <input type="hidden" name="form-name" value="contacto" />
+    <p class="srOnly">
+      <label>{t.humanLabel} <input name="bot-field" /></label>
+    </p>
+
+    <label class="field">
+      <span class="field__label">{t.name}</span>
+      <input class="field__input" name="nombre" autocomplete="name" required minlength="2" placeholder={t.namePh} />
+      <span class="field__err" aria-live="polite"></span>
+    </label>
+
+    <label class="field">
+      <span class="field__label">{t.contact}</span>
+      <input class="field__input" name="contacto" autocomplete="email" required placeholder={t.contactPh} />
+      <span class="field__err" aria-live="polite"></span>
+    </label>
+
+    <label class="field">
+      <span class="field__label">{t.service}</span>
+      <select class="field__input" name="servicio" required>
+        <option value="">{t.select}</option>
+        <option>{locale === "en" ? "Web / UI-UX" : "Web / UI-UX"}</option>
+        <option>Discord</option>
+        <option>Minecraft</option>
+        <option>{locale === "en" ? "WhatsApp + AI" : "WhatsApp + IA"}</option>
+        <option>{locale === "en" ? "Automations" : "Automatizaciones"}</option>
+        <option>{locale === "en" ? "Other / Not sure" : "Otro / No estoy seguro"}</option>
+      </select>
+      <span class="field__err" aria-live="polite"></span>
+    </label>
+
+    <label class="field">
+      <span class="field__label">{t.budget}</span>
+      <select class="field__input" name="presupuesto" required>
+        <option value="">{t.select}</option>
+        <option>{locale === "en" ? "Under $8k MXN" : "Menos de $8k MXN"}</option>
+        <option>{locale === "en" ? "$8k–$15k MXN" : "$8k–$15k MXN"}</option>
+        <option>{locale === "en" ? "$15k–$26k MXN" : "$15k–$26k MXN"}</option>
+        <option>{locale === "en" ? "Need recommendation" : "Necesito recomendación"}</option>
+        <option>{t.budgetNone}</option>
+      </select>
+      <span class="field__err" aria-live="polite"></span>
+    </label>
+
+    <label class="field field--full">
+      <span class="field__label">{t.message}</span>
+      <textarea class="field__input" name="mensaje" required minlength="10" rows="6" placeholder={t.messagePh}></textarea>
+      <span class="field__err" aria-live="polite"></span>
+    </label>
+
+    <div class="form__actions field--full">
+      <button class="btn btn-primary" type="submit">{t.send}</button>
+      <div class="muted small">
+        {t.consent}
+      </div>
+    </div>
+  </form>
+</section>
+
+<script is:inline define:vars={{ STR: t }}>
+  (function(){
+    const form = document.querySelector('form[name="contacto"]');
+    if(!form) return;
+    const fields = Array.from(form.querySelectorAll(".field"));
+
+    const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const isPhoneish = (v) => /\+?\d[\d\s()-]{7,}/.test(v);
+
+    const setErr = (field, msg) => {
+      const err = field.querySelector(".field__err");
+      if(err) err.textContent = msg || "";
+      field.classList.toggle("hasErr", Boolean(msg));
+    };
+
+    const validate = () => {
+      let ok = true;
+      for(const field of fields){
+        const input = field.querySelector("input, select, textarea");
+        if(!input) continue;
+        if(input.tagName === "INPUT" && input.name === "contacto"){
+          const v = String(input.value || "").trim();
+          const valid = v.length >= 6 && (isEmail(v) || isPhoneish(v));
+          if(!valid){
+            setErr(field, STR.invalidContact);
+            ok = false;
+          } else setErr(field, "");
+          continue;
+        }
+        if(!input.checkValidity()){
+          const msg = input.validationMessage || STR.required;
+          setErr(field, msg);
+          ok = false;
+        } else setErr(field, "");
+      }
+      return ok;
+    };
+
+    form.addEventListener("submit", (e) => {
+      if(!validate()){
+        e.preventDefault();
+        const first = form.querySelector(".hasErr .field__input");
+        if(first) first.focus();
+      }
+    });
+    form.addEventListener("input", (e) => {
+      const field = e.target?.closest?.(".field");
+      if(field) setErr(field, "");
+    });
+  })();
+</script>
+
+<style>
+  .srOnly{
+    position:absolute;
+    width:1px; height:1px;
+    padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0);
+    white-space:nowrap; border:0;
+  }
+  .form__head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom: 16px;
+  }
+  .form__grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+    margin-top: 14px;
+  }
+  .field{ display:grid; gap:8px; }
+  .field--full{ grid-column: 1 / -1; }
+  .field__label{ font-size: 13px; color: rgba(237,237,243,.82); }
+  .field__input{
+    width:100%;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .field__input::placeholder{ color: rgba(184,184,199,.70); }
+  .field__err{ font-size: 12px; color: rgba(255,140,140,.92); min-height: 14px; }
+  .field.hasErr .field__input{ border-color: rgba(255,140,140,.55); }
+
+  .form__actions{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top: 6px;
+  }
+  .small{ font-size: 13px; }
+
+  @media (max-width: 980px){
+    .form__head{ flex-direction:column; align-items:stretch; }
+    .form__grid{ grid-template-columns: 1fr; }
+  }
+</style>

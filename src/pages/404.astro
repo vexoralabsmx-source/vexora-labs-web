@@ -1,0 +1,32 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+---
+<BaseLayout
+  page="home"
+  title={`404 — ${BRAND}`}
+  description="Pagina no encontrada."
+  canonicalPath="/404/"
+  noindex={true}
+>
+  <section class="section">
+    <div class="container glass card" data-reveal>
+      <div class="pill">404</div>
+      <h1 class="h1" style="margin-top:14px;">Esta ruta no existe.</h1>
+      <p class="muted" style="margin:12px 0 0;">
+        Si llegaste aqui desde un link, avisanos. Te ayudamos a encontrar lo que buscabas.
+      </p>
+      <div class="cta" style="margin-top:16px;">
+        <a class="btn btn-primary" href={getWhatsAppLink("home")} target="_blank" rel="noreferrer">Escribir por WhatsApp</a>
+        <a class="btn" href="/">Volver al inicio</a>
+        <a class="btn" href="/servicios/">Ver servicios</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .cta{ display:flex; gap:10px; flex-wrap:wrap; }
+  </style>
+</BaseLayout>
+

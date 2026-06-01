@@ -1,0 +1,469 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BRAND } from "@/lib/constants";
+
+const SUPABASE_URL = (import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
+const SUPABASE_ANON_KEY = (import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+---
+
+<BaseLayout
+  page="cuenta"
+  title={`Admin afiliados — ${BRAND}`}
+  description="Panel administrativo para revisar ventas referidas, aprobar comisiones y pagar afiliados."
+  canonicalPath="/admin/"
+  noindex
+>
+  <section class="adminPage">
+    <div class="adminShell">
+      <header class="adminHero">
+        <div>
+          <span class="eyebrow">Vexora Labs</span>
+          <h1>Admin de afiliados</h1>
+          <p>Revisa ventas con invoice interno, aprueba comisiones y controla pagos sin exponer llaves privadas.</p>
+        </div>
+        <button class="btnGhost" type="button" data-refresh>Actualizar</button>
+      </header>
+
+      {!SUPABASE_URL || !SUPABASE_ANON_KEY ? (
+        <div class="panel warning">Supabase no está configurado.</div>
+      ) : (
+        <>
+          <form class="panel authBox" data-admin-auth>
+            <div class="panelHead">
+              <div>
+                <span class="eyebrow">Acceso admin</span>
+                <h2>Iniciar sesión</h2>
+              </div>
+              <button class="btnGhost" type="button" data-logout hidden>Salir</button>
+            </div>
+            <p class="status" data-status>Inicia sesión con un usuario incluido en `admin_users`.</p>
+            <div class="grid three compact">
+              <label class="field">
+                <span>Email</span>
+                <input name="email" type="email" autocomplete="email" required />
+              </label>
+              <label class="field">
+                <span>Contraseña</span>
+                <input name="password" type="password" autocomplete="current-password" required />
+              </label>
+              <button class="btnPrimary fieldButton" type="submit">Entrar</button>
+            </div>
+          </form>
+
+          <section data-admin-app hidden>
+            <div class="grid four">
+              <article class="metric"><span>Afiliados</span><strong data-m-profiles>0</strong></article>
+              <article class="metric"><span>Saldo pendiente</span><strong data-m-balance>$0 MXN</strong></article>
+              <article class="metric"><span>Ventas pendientes</span><strong data-m-orders>0</strong></article>
+              <article class="metric"><span>Comisiones pendientes</span><strong data-m-commissions>0</strong></article>
+            </div>
+
+            <section class="grid two">
+              <form class="panel" data-manual-order>
+                <div class="panelHead">
+                  <div>
+                    <span class="eyebrow">Venta manual</span>
+                    <h2>Registrar venta</h2>
+                  </div>
+                  <button class="btnGhost" type="button" data-generate-invoice>Generar invoice</button>
+                </div>
+                <div class="grid two compact">
+                  <label class="field"><span>Código afiliado</span><input name="invite_code" maxlength="32" required /></label>
+                  <label class="field"><span>Invoice ID</span><input name="invoice_id" placeholder="VEX-20260531-0001" required /></label>
+                </div>
+                <div class="grid two compact">
+                  <label class="field"><span>Cliente</span><input name="customer_name" /></label>
+                  <label class="field"><span>Contacto</span><input name="customer_contact" /></label>
+                </div>
+                <div class="grid two compact">
+                  <label class="field"><span>Email cliente</span><input name="customer_email" type="email" /></label>
+                  <label class="field">
+                    <span>Servicio</span>
+                    <select name="service_name" required>
+                      <option value="">Selecciona servicio</option>
+                      <option>Páginas web</option>
+                      <option>Bots de Discord</option>
+                      <option>Automatizaciones</option>
+                      <option>Servidores de Minecraft</option>
+                      <option>UI/UX</option>
+                      <option>Soluciones con IA</option>
+                      <option>Productos digitales</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="grid three compact">
+                  <label class="field"><span>Monto MXN</span><input name="amount_mxn" type="number" min="1" step="0.01" required /></label>
+                  <label class="field"><span>Comisión %</span><input name="commission_percent" type="number" min="1" max="50" step="0.1" value="20" required /></label>
+                  <label class="field"><span>Método pago</span><input name="payment_method" placeholder="Transferencia" /></label>
+                </div>
+                <label class="field"><span>Comprobante URL</span><input name="proof_url" type="url" /></label>
+                <label class="field"><span>Notas admin</span><textarea name="admin_notes" rows="3"></textarea></label>
+                <label class="check"><input name="approve_now" type="checkbox" /> Crear y aprobar inmediatamente</label>
+                <button class="btnPrimary" type="submit">Crear venta</button>
+                <p class="status" data-manual-status>La venta nueva notificará a Discord si queda pendiente.</p>
+              </form>
+
+              <form class="panel" data-payout-form>
+                <div class="panelHead">
+                  <div>
+                    <span class="eyebrow">Payout</span>
+                    <h2>Pagar afiliado</h2>
+                  </div>
+                </div>
+                <label class="field"><span>User ID del afiliado</span><input name="affiliate_user_id" required /></label>
+                <div class="grid two compact">
+                  <label class="field"><span>Método</span><input name="method" placeholder="Transferencia" /></label>
+                  <label class="field"><span>Referencia</span><input name="reference" /></label>
+                </div>
+                <label class="field"><span>Notas</span><textarea name="notes" rows="4"></textarea></label>
+                <button class="btnPrimary" type="submit">Crear payout y marcar pagadas</button>
+                <p class="status" data-payout-status>Usa esta acción cuando ya pagaste al afiliado.</p>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panelHead">
+                <div>
+                  <span class="eyebrow">Afiliados</span>
+                  <h2>Perfiles</h2>
+                </div>
+              </div>
+              <div class="tableWrap"><table><thead><tr><th>User ID</th><th>Código</th><th>Saldo</th><th>Histórico</th><th>Status</th><th>Pago</th></tr></thead><tbody data-profiles></tbody></table></div>
+            </section>
+
+            <section class="panel">
+              <div class="panelHead">
+                <div>
+                  <span class="eyebrow">Órdenes</span>
+                  <h2>Ventas referidas</h2>
+                </div>
+                <div class="filters">
+                  <select data-filter-status>
+                    <option value="">Todos los estados</option>
+                    <option value="pending_review">Pendiente</option>
+                    <option value="approved">Aprobada</option>
+                    <option value="rejected">Rechazada</option>
+                    <option value="cancelled">Cancelada</option>
+                  </select>
+                  <input data-filter-invoice placeholder="Filtrar invoice" />
+                </div>
+              </div>
+              <div class="tableWrap"><table><thead><tr><th>Invoice</th><th>Afiliado</th><th>Cliente</th><th>Servicio</th><th>Monto</th><th>Comisión</th><th>Status</th><th>Acciones</th></tr></thead><tbody data-orders></tbody></table></div>
+            </section>
+
+            <section class="grid two">
+              <div class="panel">
+                <div class="panelHead"><h2>Comisiones</h2></div>
+                <div class="tableWrap"><table><thead><tr><th>ID</th><th>Invoice</th><th>Afiliado</th><th>Comisión</th><th>Status</th><th>Acción</th></tr></thead><tbody data-commissions></tbody></table></div>
+              </div>
+              <div class="panel">
+                <div class="panelHead"><h2>Payouts</h2></div>
+                <div class="tableWrap"><table><thead><tr><th>ID</th><th>Afiliado</th><th>Monto</th><th>Status</th><th>Referencia</th></tr></thead><tbody data-payouts></tbody></table></div>
+              </div>
+            </section>
+          </section>
+        </>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
+  (() => {
+    const AUTH_KEY = "vexora_auth_v2";
+    let ordersCache = [];
+    const $ = (s, root = document) => root.querySelector(s);
+    const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+    const status = $("[data-status]");
+    const app = $("[data-admin-app]");
+    const authForm = $("[data-admin-auth]");
+
+    function setText(el, text){ if(el) el.textContent = text; }
+    function session(){ try { return JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); } catch { return null; } }
+    function saveSession(s){ localStorage.setItem(AUTH_KEY, JSON.stringify(s)); }
+    function clearSession(){ localStorage.removeItem(AUTH_KEY); }
+    function authHeaders(){ return { authorization: `Bearer ${session()?.access_token || ""}` }; }
+    function money(cents, currency = "MXN"){ return new Intl.NumberFormat("es-MX", { style:"currency", currency }).format(Number(cents || 0) / 100); }
+    function short(v){ const s = String(v || "—"); return s.length > 14 ? `${s.slice(0, 7)}...${s.slice(-5)}` : s; }
+    function cleanCode(v){ return String(v || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32); }
+    function cleanInvoice(v){ return String(v || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24); }
+    function statusLabel(v){
+      return ({ pending_review:"Pendiente", approved:"Aprobada", rejected:"Rechazada", cancelled:"Cancelada", pending:"Pendiente de pago", paid:"Pagada", active:"Activo", suspended:"Suspendido", banned:"Baneado" })[String(v || "")] || v || "—";
+    }
+    function badge(v){
+      const span = document.createElement("span");
+      span.className = `badge ${v || ""}`;
+      span.textContent = statusLabel(v);
+      return span;
+    }
+    function td(text){
+      const cell = document.createElement("td");
+      cell.textContent = text == null ? "—" : String(text);
+      return cell;
+    }
+    function button(text, action, id, variant = "btnMini"){
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = variant;
+      btn.dataset.action = action;
+      btn.dataset.id = id;
+      btn.textContent = text;
+      return btn;
+    }
+    async function api(path, opts = {}){
+      const headers = Object.assign({
+        apikey: SUPABASE_ANON_KEY,
+        authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "content-type": "application/json"
+      }, opts.headers || {});
+      const res = await fetch(`${SUPABASE_URL}${path}`, Object.assign({}, opts, { headers }));
+      const data = await res.json().catch(() => null);
+      if(!res.ok) throw new Error(data?.message || data?.msg || data?.error_description || data?.error || `Error ${res.status}`);
+      return data;
+    }
+    async function rpc(name, body = {}){ return api(`/rest/v1/rpc/${name}`, { method:"POST", headers: authHeaders(), body: JSON.stringify(body) }); }
+    async function signIn(email, password){ return api("/auth/v1/token?grant_type=password", { method:"POST", body: JSON.stringify({ email, password }) }); }
+    async function refreshSession(){
+      const s = session();
+      if(!s?.refresh_token) return s;
+      const exp = Number(s.expires_at || 0);
+      if(exp && Math.floor(Date.now() / 1000) < exp - 45) return s;
+      try {
+        const out = await api("/auth/v1/token?grant_type=refresh_token", { method:"POST", body: JSON.stringify({ refresh_token: s.refresh_token }) });
+        saveAuth(out, s.email);
+        return session();
+      } catch {
+        clearSession();
+        return null;
+      }
+    }
+    function saveAuth(out, email){
+      const user = out?.user || out?.session?.user || {};
+      const expiresIn = Number(out?.expires_in || out?.session?.expires_in || 0);
+      saveSession({
+        user_id: user.id || "",
+        email: user.email || email || "",
+        access_token: out?.access_token || out?.session?.access_token || "",
+        refresh_token: out?.refresh_token || out?.session?.refresh_token || "",
+        expires_at: expiresIn ? Math.floor(Date.now() / 1000) + expiresIn : 0
+      });
+    }
+    async function requireAdmin(){
+      const s = await refreshSession();
+      if(!s?.access_token){ app.hidden = true; setText(status, "Inicia sesión como admin."); return false; }
+      const ok = await rpc("is_admin", {});
+      if(!ok){ app.hidden = true; setText(status, `Tu cuenta (${s.email || "sin email"}) no es admin.`); return false; }
+      app.hidden = false;
+      $("[data-logout]").hidden = false;
+      setText(status, `Admin activo: ${s.email}`);
+      return true;
+    }
+    async function loadAll(){
+      if(!(await requireAdmin())) return;
+      setText(status, "Cargando datos...");
+      const [metrics, profiles, orders, commissions, payouts] = await Promise.all([
+        rpc("admin_dashboard_metrics", {}),
+        api("/rest/v1/affiliate_profiles?select=*&order=created_at.desc&limit=200", { headers: authHeaders() }),
+        api("/rest/v1/affiliate_orders?select=*&order=created_at.desc&limit=200", { headers: authHeaders() }),
+        api("/rest/v1/affiliate_commissions?select=*&order=created_at.desc&limit=200", { headers: authHeaders() }),
+        api("/rest/v1/affiliate_payouts?select=*&order=created_at.desc&limit=100", { headers: authHeaders() })
+      ]);
+      ordersCache = Array.isArray(orders) ? orders : [];
+      setText($("[data-m-profiles]"), metrics?.profiles_count || 0);
+      setText($("[data-m-balance]"), money(metrics?.balance_pending_cents || 0));
+      setText($("[data-m-orders]"), metrics?.orders_pending_count || 0);
+      setText($("[data-m-commissions]"), `${metrics?.commissions_pending_count || 0} · ${money(metrics?.commissions_pending_cents || 0)}`);
+      renderProfiles(profiles || []);
+      renderOrders();
+      renderCommissions(commissions || []);
+      renderPayouts(payouts || []);
+      setText(status, "Panel actualizado.");
+    }
+    function renderProfiles(rows){
+      const body = $("[data-profiles]");
+      body.innerHTML = "";
+      for(const row of rows){
+        const tr = document.createElement("tr");
+        tr.append(td(short(row.user_id)), td(row.invite_code), td(money(row.referral_balance_cents)), td(money(row.lifetime_earned_cents)));
+        const state = document.createElement("td"); state.append(badge(row.status)); tr.append(state);
+        tr.append(td([row.payout_method, row.payout_email].filter(Boolean).join(" · ") || "—"));
+        body.append(tr);
+      }
+    }
+    function renderOrders(){
+      const body = $("[data-orders]");
+      const statusFilter = $("[data-filter-status]").value;
+      const invoiceFilter = cleanInvoice($("[data-filter-invoice]").value);
+      body.innerHTML = "";
+      const rows = ordersCache.filter((row) => (!statusFilter || row.status === statusFilter) && (!invoiceFilter || String(row.invoice_id).includes(invoiceFilter)));
+      for(const row of rows){
+        const tr = document.createElement("tr");
+        tr.append(td(row.invoice_id), td(row.invite_code), td(row.customer_name || row.customer_contact || "—"), td(row.service_name), td(money(row.amount_cents, row.currency)), td(money(row.commission_cents, row.currency)));
+        const state = document.createElement("td"); state.append(badge(row.status)); tr.append(state);
+        const actions = document.createElement("td");
+        actions.className = "rowActions";
+        if(row.status === "pending_review"){
+          actions.append(button("Aprobar", "approve", row.id), button("Rechazar", "reject", row.id, "btnMini danger"));
+        }
+        actions.append(button("Discord", "notify", row.id, "btnMini ghost"));
+        tr.append(actions);
+        body.append(tr);
+      }
+    }
+    function renderCommissions(rows){
+      const body = $("[data-commissions]");
+      body.innerHTML = "";
+      for(const row of rows){
+        const tr = document.createElement("tr");
+        tr.append(td(short(row.id)), td(row.invoice_id), td(short(row.affiliate_user_id)), td(money(row.commission_cents, row.currency)));
+        const state = document.createElement("td"); state.append(badge(row.status)); tr.append(state);
+        const actions = document.createElement("td");
+        if(row.status === "pending") actions.append(button("Pagada", "paid", row.id));
+        tr.append(actions);
+        body.append(tr);
+      }
+    }
+    function renderPayouts(rows){
+      const body = $("[data-payouts]");
+      body.innerHTML = "";
+      for(const row of rows){
+        const tr = document.createElement("tr");
+        tr.append(td(short(row.id)), td(short(row.affiliate_user_id)), td(money(row.amount_cents, row.currency)));
+        const state = document.createElement("td"); state.append(badge(row.status)); tr.append(state);
+        tr.append(td(row.reference || "—"));
+        body.append(tr);
+      }
+    }
+    async function notifyOrder(orderId){
+      return fetch("/api/admin/notify-order", {
+        method:"POST",
+        headers:{ "content-type":"application/json", authorization:`Bearer ${session()?.access_token || ""}` },
+        body: JSON.stringify({ order_id: orderId })
+      }).then((r) => r.json()).catch(() => ({ notification_sent:false }));
+    }
+
+    authForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      setText(status, "Validando admin...");
+      try {
+        const out = await signIn(String(form.elements.email.value || "").trim(), String(form.elements.password.value || ""));
+        saveAuth(out, form.elements.email.value);
+        await loadAll();
+      } catch (err) {
+        setText(status, err?.message || "No se pudo iniciar sesión.");
+      }
+    });
+    $("[data-logout]")?.addEventListener("click", () => { clearSession(); app.hidden = true; setText(status, "Sesión cerrada."); });
+    $("[data-refresh]")?.addEventListener("click", () => loadAll().catch((err) => setText(status, err?.message || "Error al actualizar.")));
+    $("[data-filter-status]")?.addEventListener("change", renderOrders);
+    $("[data-filter-invoice]")?.addEventListener("input", renderOrders);
+    $("[data-generate-invoice]")?.addEventListener("click", async () => {
+      try { $("[data-manual-order]").elements.invoice_id.value = await rpc("generate_invoice_id", {}); }
+      catch (err) { setText($("[data-manual-status]"), err?.message || "No se pudo generar invoice."); }
+    });
+    $("[data-manual-order]")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const amount = Number(String(form.get("amount_mxn") || "0").replace(",", "."));
+      const pct = Number(String(form.get("commission_percent") || "20").replace(",", "."));
+      const outEl = $("[data-manual-status]");
+      if(!Number.isFinite(amount) || amount <= 0) return setText(outEl, "Monto inválido.");
+      setText(outEl, "Creando venta...");
+      try {
+        const out = await rpc("create_manual_admin_order", {
+          p_invite_code: cleanCode(form.get("invite_code")),
+          p_invoice_id: cleanInvoice(form.get("invoice_id")),
+          p_customer_name: String(form.get("customer_name") || ""),
+          p_customer_contact: String(form.get("customer_contact") || ""),
+          p_customer_email: String(form.get("customer_email") || ""),
+          p_service_name: String(form.get("service_name") || ""),
+          p_amount_cents: Math.round(amount * 100),
+          p_currency: "MXN",
+          p_commission_rate: Math.max(1, Math.min(Number.isFinite(pct) ? pct : 20, 50)) / 100,
+          p_payment_method: String(form.get("payment_method") || ""),
+          p_proof_url: String(form.get("proof_url") || ""),
+          p_admin_notes: String(form.get("admin_notes") || "")
+        });
+        let message = "Venta creada.";
+        const notified = await notifyOrder(out?.order_id);
+        if(notified?.notification_sent) message += " Discord notificado.";
+        if(form.get("approve_now")){
+          await rpc("approve_affiliate_order", { p_order_record_id: out.order_id });
+          message += " Comisión creada por aprobación inmediata.";
+        }
+        event.currentTarget.reset();
+        setText(outEl, message);
+        await loadAll();
+      } catch (err) {
+        setText(outEl, err?.message || "No se pudo crear venta.");
+      }
+    });
+    $("[data-payout-form]")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const outEl = $("[data-payout-status]");
+      setText(outEl, "Creando payout...");
+      try {
+        const out = await rpc("create_payout_for_affiliate", {
+          p_affiliate_user_id: String(form.get("affiliate_user_id") || "").trim(),
+          p_method: String(form.get("method") || ""),
+          p_reference: String(form.get("reference") || ""),
+          p_notes: String(form.get("notes") || "")
+        });
+        setText(outEl, `Payout creado por ${money(out?.amount_cents || 0)}.`);
+        event.currentTarget.reset();
+        await loadAll();
+      } catch (err) {
+        setText(outEl, err?.message || "No se pudo crear payout.");
+      }
+    });
+    document.addEventListener("click", async (event) => {
+      const btn = event.target.closest("[data-action]");
+      if(!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      try {
+        if(action === "approve") await rpc("approve_affiliate_order", { p_order_record_id: id });
+        if(action === "reject"){
+          const reason = window.prompt("Motivo de rechazo") || "";
+          await rpc("reject_affiliate_order", { p_order_record_id: id, p_reason: reason });
+        }
+        if(action === "paid") await rpc("mark_commission_paid", { p_commission_id: id });
+        if(action === "notify") await notifyOrder(id);
+        await loadAll();
+      } catch (err) {
+        setText(status, err?.message || "Acción fallida.");
+      }
+    });
+
+    loadAll().catch(() => setText(status, "Inicia sesión como admin."));
+  })();
+</script>
+
+<style>
+  .adminPage{background:#050505;color:#fff;min-height:100vh;padding:44px 0}
+  .adminShell{width:min(1320px,calc(100% - 32px));margin:0 auto;display:grid;gap:16px}
+  .adminHero{display:flex;justify-content:space-between;gap:16px;align-items:end}
+  .adminHero h1{font-size:clamp(2rem,4vw,4.2rem);line-height:1;margin:8px 0 0;letter-spacing:0}
+  .adminHero p,.status,.field span{color:#a1a1aa}
+  .eyebrow{font-size:.76rem;text-transform:uppercase;color:#38bdf8;letter-spacing:.12em;font-weight:700}
+  .grid{display:grid;gap:16px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.four{grid-template-columns:repeat(4,minmax(0,1fr))}.compact{gap:12px}
+  .panel,.metric{background:rgba(9,9,11,.88);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:18px;box-shadow:0 18px 70px rgba(0,0,0,.25)}
+  .panelHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .panel h2{margin:4px 0 0;font-size:1.1rem}.metric span{color:#a1a1aa}.metric strong{display:block;margin-top:8px;font-size:1.45rem}
+  .field{display:grid;gap:7px}.fieldButton{align-self:end}
+  input,select,textarea{width:100%;background:#050505;border:1px solid rgba(255,255,255,.13);border-radius:8px;color:#fff;padding:10px 11px;font:inherit}
+  .btnPrimary,.btnGhost,.btnMini{border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 13px;color:#fff;font-weight:700;cursor:pointer}
+  .btnPrimary{background:#7c3aed;border-color:#7c3aed}.btnGhost,.btnMini{background:rgba(255,255,255,.05)}
+  .btnMini{font-size:.78rem;padding:7px 9px}.btnMini.danger{border-color:rgba(252,165,165,.35);color:#fca5a5}.btnMini.ghost{color:#93c5fd}
+  .check{display:flex;gap:8px;align-items:center;color:#d4d4d8;margin:12px 0}.check input{width:auto}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}.filters input,.filters select{min-width:180px}
+  .tableWrap{overflow:auto}.tableWrap table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;border-top:1px solid rgba(255,255,255,.08);padding:10px;color:#d4d4d8;font-size:.9rem}th{color:#fff}
+  .rowActions{display:flex;gap:7px;flex-wrap:wrap}
+  .badge{display:inline-flex;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);border-radius:999px;padding:6px 9px;font-size:.78rem;color:#d4d4d8}
+  .badge.pending_review,.badge.pending{color:#fde68a;border-color:rgba(253,230,138,.35)}.badge.approved,.badge.active{color:#86efac;border-color:rgba(134,239,172,.35)}.badge.rejected,.badge.banned{color:#fca5a5;border-color:rgba(252,165,165,.35)}.badge.paid{color:#93c5fd;border-color:rgba(147,197,253,.35)}
+  .warning{color:#fde68a}
+  @media (max-width:980px){.two,.three,.four{grid-template-columns:1fr}.adminHero{display:grid}.fieldButton{align-self:auto}}
+  @media (max-width:560px){.adminPage{padding:30px 0}.panelHead{display:grid}.filters{display:grid}.metric strong{font-size:1.25rem}}
+</style>

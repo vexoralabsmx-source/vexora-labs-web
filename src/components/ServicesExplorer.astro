@@ -1,0 +1,177 @@
+---
+import { getServiceCategories, getServices } from "@/lib/services";
+import { getWhatsAppLink, type PageKey } from "@/lib/whatsapp";
+import { localeFromPath, type Locale } from "@/lib/i18n";
+import { routeFor } from "@/lib/routes";
+
+type Props = { page: PageKey };
+const { page } = Astro.props;
+const locale: Locale = localeFromPath(Astro.url.pathname);
+const CATEGORIES = getServiceCategories(locale);
+const SERVICES = getServices(locale);
+const categoryLabel = Object.fromEntries(
+  CATEGORIES.filter((c) => c.id !== "all").map((c) => [c.id, c.label])
+);
+const t = {
+  aria: locale === "en" ? "Services explorer" : "Explorador de servicios",
+  title: locale === "en" ? "Services Explorer" : "Explorador de servicios",
+  lead:
+    locale === "en"
+      ? "Filter by category. Everything we deliver is documented, reproducible, and built to scale."
+      : "Filtra por categoria. Todo lo que entregamos es documentado, reproducible y pensado para escalar.",
+  filtersAria: locale === "en" ? "Service filters" : "Filtros de servicios",
+  quote: locale === "en" ? "Get a quote on WhatsApp" : "Cotizar por WhatsApp",
+  view: locale === "en" ? "View details" : "Ver detalle",
+  quoteShort: locale === "en" ? "Quote" : "Cotizar",
+  allId: "all"
+};
+---
+<section class="explorer glass card" aria-label={t.aria}>
+  <div class="explorer__head">
+    <div>
+      <div class="h3">{t.title}</div>
+      <p class="muted" style="margin:8px 0 0;">
+        {t.lead}
+      </p>
+    </div>
+    <a class="btn btn-primary" href={getWhatsAppLink(page, locale)} target="_blank" rel="noreferrer">{t.quote}</a>
+  </div>
+
+  <div class="explorer__filters" role="tablist" aria-label={t.filtersAria}>
+    {CATEGORIES.map((c) => (
+      <button class="chip" type="button" data-filter={c.id}>
+        {c.label}
+      </button>
+    ))}
+  </div>
+
+  <div class="explorer__grid" data-services-grid>
+    {SERVICES.map((s) => (
+      <article class="svc" data-category={s.category} data-reveal>
+        <div class="svc__top">
+          <div class="svc__title">{s.title}</div>
+          <div class="svc__cat">{categoryLabel[s.category]}</div>
+        </div>
+        <p class="muted" style="margin:10px 0 14px;">{s.summary}</p>
+        <ul class="svc__list">
+          {s.bullets.map((b) => (
+            <li>{b}</li>
+          ))}
+        </ul>
+        <div class="svc__bottom">
+          <a class="btn" href={routeFor(s.hrefKey, locale)}>{t.view}</a>
+          <a class="btn btn-primary" href={getWhatsAppLink(page, locale)} target="_blank" rel="noreferrer">{t.quoteShort}</a>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<script is:inline define:vars={{ STR: t }}>
+  (function(){
+    const root = document.currentScript?.closest("section");
+    if(!root) return;
+    const chips = Array.from(root.querySelectorAll("[data-filter]"));
+    const cards = Array.from(root.querySelectorAll("[data-category]"));
+
+    const setActive = (label) => {
+      for(const c of chips){
+        c.classList.toggle("is-active", c.getAttribute("data-filter") === label);
+      }
+      for(const card of cards){
+        const cat = card.getAttribute("data-category");
+        const show = label === STR.allId || cat === label;
+        card.classList.toggle("is-hidden", !show);
+      }
+    };
+
+    for(const c of chips){
+      c.addEventListener("click", () => setActive(c.getAttribute("data-filter")));
+    }
+    setActive(STR.allId);
+  })();
+</script>
+
+<style>
+  .explorer__head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom: 16px;
+  }
+  .explorer__filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin: 14px 0 18px;
+  }
+  .chip{
+    border-radius:999px;
+    padding:10px 12px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.03);
+    cursor:pointer;
+    transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    font-size: 14px;
+  }
+  .chip:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.22); }
+  .chip.is-active{
+    border-color: rgba(139,92,255,.35);
+    background: linear-gradient(180deg, rgba(139,92,255,.20), rgba(255,255,255,.03));
+  }
+
+  .explorer__grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+  }
+  .svc{
+    border-radius: 20px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    padding: 18px;
+    box-shadow: 0 16px 50px rgba(0,0,0,.35);
+  }
+  .svc.is-hidden{ display:none; }
+  .svc__top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .svc__title{
+    font-family: var(--font-display);
+    font-weight:600;
+    letter-spacing:-.02em;
+  }
+  .svc__cat{
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.03);
+    color: rgba(237,237,243,.78);
+    white-space:nowrap;
+  }
+  .svc__list{
+    margin:0;
+    padding-left: 18px;
+    color: rgba(237,237,243,.82);
+  }
+  .svc__list li{ margin: 6px 0; }
+  .svc__bottom{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 1100px){
+    .explorer__grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 720px){
+    .explorer__head{ flex-direction:column; align-items:stretch; }
+    .explorer__grid{ grid-template-columns: 1fr; }
+  }
+</style>

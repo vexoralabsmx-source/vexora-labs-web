@@ -1,0 +1,103 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ServicesExplorer from "@/components/ServicesExplorer.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+---
+<BaseLayout
+  page="servicios"
+  title={`Servicios — ${BRAND}`}
+  description="Servicios premium: web/UI-UX, Discord, Minecraft, automatizaciones y WhatsApp + IA con integraciones permitidas. Entregables claros, performance y seguridad."
+  canonicalPath="/servicios/"
+>
+  <section class="section">
+    <div class="container">
+      <div class="head glass card" data-reveal>
+        <div>
+          <div class="pill">Servicios</div>
+          <h1 class="h1" style="margin-top:14px;">Construimos sistemas que se operan sin friccion.</h1>
+          <p class="muted" style="margin:12px 0 0; max-width:70ch;">
+            No vendemos humo: definimos alcance, entregables y checklist. Diseñamos para seguridad, claridad y performance.
+            Si algo cruza la linea (hacks, spam, accesos no autorizados), no lo hacemos.
+          </p>
+        </div>
+        <div class="head__cta">
+          <a class="btn btn-primary" href={getWhatsAppLink("servicios")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+          <a class="btn" href="/precios/">Ver paquetes</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <ServicesExplorer page="servicios" />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Diferenciadores</h2>
+        <ul class="list">
+          <li><strong>Precision de producto:</strong> objetivos, restricciones y decisiones trazables.</li>
+          <li><strong>UX sin ruido:</strong> jerarquia, ritmo, micro-interacciones, accesibilidad.</li>
+          <li><strong>Engineering first:</strong> performance, seguridad basica, logs, backups.</li>
+          <li><strong>Handoff real:</strong> runbook, checklist, ownership y soporte opcional.</li>
+        </ul>
+      </div>
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Tiempos tipicos</h2>
+        <div class="timeline">
+          <div class="tItem">
+            <div class="tItem__k">Web premium</div>
+            <div class="muted">10–18 dias habiles segun paginas e integraciones.</div>
+          </div>
+          <div class="tItem">
+            <div class="tItem__k">Discord / Minecraft</div>
+            <div class="muted">7–14 dias habiles segun complejidad y hardening.</div>
+          </div>
+          <div class="tItem">
+            <div class="tItem__k">WhatsApp + IA</div>
+            <div class="muted">Depende de aprobaciones y proveedor (API oficial). 2–4 semanas tipicas.</div>
+          </div>
+          <div class="tItem">
+            <div class="tItem__k">Automatizaciones</div>
+            <div class="muted">Desde 1 semana para un flujo, hasta 4+ para operaciones multi-canal.</div>
+          </div>
+        </div>
+        <div class="note muted small">
+          En proyectos con riesgo (migraciones, comunidades grandes) proponemos etapas para evitar downtime.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 10px 0; }
+    .timeline{
+      margin-top: 12px;
+      display:grid;
+      gap:10px;
+    }
+    .tItem{
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+    }
+    .tItem__k{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .small{ font-size: 13px; }
+    .note{ margin-top: 12px; }
+  </style>
+</BaseLayout>
+

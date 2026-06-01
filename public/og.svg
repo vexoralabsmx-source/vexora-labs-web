@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="bg" cx="25%" cy="20%" r="90%">
+      <stop offset="0%" stop-color="#1A1230"/>
+      <stop offset="55%" stop-color="#07070B"/>
+      <stop offset="100%" stop-color="#07070B"/>
+    </radialGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#8B5CFF"/>
+      <stop offset="1" stop-color="#6AE4FF"/>
+    </linearGradient>
+    <filter id="glass" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="18" />
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="260" cy="120" r="240" fill="#8B5CFF" opacity=".10"/>
+  <circle cx="980" cy="520" r="300" fill="#6AE4FF" opacity=".08"/>
+
+  <g opacity=".8">
+    <rect x="100" y="150" width="1000" height="330" rx="28" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.14)"/>
+  </g>
+
+  <g transform="translate(140 210)">
+    <text x="0" y="0" fill="#EDEDF3" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI" font-size="52" font-weight="700">Vexora Labs</text>
+    <text x="0" y="64" fill="#B8B8C7" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI" font-size="28">Infraestructura digital para crecer sin friccion.</text>
+    <rect x="0" y="120" width="380" height="10" rx="5" fill="url(#a)"/>
+    <text x="0" y="188" fill="#EDEDF3" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI" font-size="24">Web premium · Discord · Minecraft · Automatizaciones · WhatsApp + IA</text>
+  </g>
+</svg>
+

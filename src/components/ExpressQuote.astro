@@ -1,0 +1,1018 @@
+---
+import { WHATSAPP_PHONE_E164 } from "@/lib/constants";
+import { getPricing } from "@/lib/pricing";
+import { localeFromPath, type Locale } from "@/lib/i18n";
+
+type Props = { id?: string };
+const { id = "cotizador-express" } = Astro.props;
+
+const locale: Locale = localeFromPath(Astro.url.pathname);
+const PRICING = getPricing(locale).map((t) => ({
+  id: t.id,
+  name: t.name,
+  priceOneTimeMXN: t.priceOneTimeMXN,
+  priceOneTimeSuffix: t.priceOneTimeSuffix ?? ""
+}));
+
+const t = {
+  trigger: locale === "en" ? "Express quote" : "Cotizador express",
+  triggerHint:
+    locale === "en"
+      ? "6-step estimate with a WhatsApp-ready message."
+      : "Estimación en 6 pasos con mensaje listo para WhatsApp.",
+  ariaOpen: locale === "en" ? "Open express quote" : "Abrir cotizador express",
+  ariaDialog: locale === "en" ? "Express quote wizard" : "Asistente de cotización express",
+  close: locale === "en" ? "Close" : "Cerrar",
+  back: locale === "en" ? "Back" : "Atrás",
+  next: locale === "en" ? "Next" : "Siguiente",
+  step: locale === "en" ? "Step" : "Paso",
+  of: locale === "en" ? "of" : "de",
+  required: locale === "en" ? "Select an option to continue." : "Selecciona una opción para continuar.",
+  steps:
+    locale === "en"
+      ? ["Service", "Scope", "Urgency", "Budget", "Extras", "Summary"]
+      : ["Servicio", "Alcance", "Urgencia", "Presupuesto", "Extras", "Resumen"],
+
+  serviceTitle: locale === "en" ? "What do you want to build?" : "¿Qué quieres construir?",
+  serviceLead:
+    locale === "en"
+      ? "Pick the main service. You can add integrations later."
+      : "Elige el servicio principal. Puedes sumar integraciones después.",
+  services: [
+    { v: "Web", d: locale === "en" ? "Landing / multi-page website" : "Landing / web multipágina" },
+    { v: "Discord", d: locale === "en" ? "Bots, roles, automations" : "Bots, roles, automatizaciones" },
+    { v: "Minecraft", d: locale === "en" ? "Server setup, plugins, ops" : "Setup, plugins, operación" },
+    { v: locale === "en" ? "Automations" : "Automatizaciones", d: locale === "en" ? "Workflows + integrations" : "Workflows + integraciones" },
+    { v: locale === "en" ? "WhatsApp + AI" : "WhatsApp + IA", d: locale === "en" ? "Official routes (WABA) + flows" : "Rutas oficiales (WABA) + flujos" }
+  ],
+
+  scopeTitle: locale === "en" ? "Scope level" : "Nivel de alcance",
+  scopes:
+    locale === "en"
+      ? [
+          { v: "mvp", l: "MVP", d: "Simple, fast, focused." },
+          { v: "standard", l: "Standard", d: "Most common. Clear flows." },
+          { v: "complex", l: "Complex", d: "Multiple flows, edge-cases." }
+        ]
+      : [
+          { v: "mvp", l: "MVP", d: "Simple, rápido, enfocado." },
+          { v: "standard", l: "Estándar", d: "Lo más común. Flujos claros." },
+          { v: "complex", l: "Complejo", d: "Varios flujos y casos límite." }
+        ],
+
+  urgencyTitle: locale === "en" ? "Urgency" : "Urgencia",
+  urgencyLead:
+    locale === "en"
+      ? "If you have a hard date, add it (optional)."
+      : "Si tienes una fecha fija, agrégala (opcional).",
+  urgencyOptions:
+    locale === "en"
+      ? [
+          { v: "normal", l: "Normal", d: "Best quality / lowest risk." },
+          { v: "rush", l: "Rush", d: "Priority delivery (adds cost)." }
+        ]
+      : [
+          { v: "normal", l: "Normal", d: "Mejor calidad / menor riesgo." },
+          { v: "rush", l: "Urgente", d: "Entrega prioritaria (sube costo)." }
+        ],
+  deadline: locale === "en" ? "Deadline (optional)" : "Deadline (opcional)",
+
+  budgetTitle: locale === "en" ? "Budget range" : "Rango de presupuesto",
+  select: locale === "en" ? "Select" : "Selecciona",
+  budgetOptions:
+    locale === "en"
+      ? ["Under $8k MXN", "$8k–$15k MXN", "$15k–$26k MXN", "Need recommendation", "Not defined"]
+      : ["Menos de $8k MXN", "$8k–$15k MXN", "$15k–$26k MXN", "Necesito recomendación", "No definido"],
+
+  extrasTitle: locale === "en" ? "Extras & integrations" : "Extras e integraciones",
+  integrationsTitle: locale === "en" ? "Integrations" : "Integraciones",
+  integrations: ["Discord", "Minecraft", "Web", locale === "en" ? "Automations" : "Automatizaciones"],
+  extras: locale === "en" ? ["Analytics", "SEO / metadata", "Copywriting", "Handoff / training"] : ["Analytics", "SEO / metadata", "Copy de conversión", "Handoff / training"],
+  site: locale === "en" ? "Your site link (optional)" : "Enlace de tu sitio (opcional)",
+  note: locale === "en" ? "Notes (optional)" : "Nota (opcional)",
+  notePh: locale === "en" ? "Context, constraints, links…" : "Contexto, restricciones, links…",
+
+  summaryTitle: locale === "en" ? "Recommendation" : "Recomendación",
+  pkg: locale === "en" ? "Suggested package" : "Paquete sugerido",
+  estimate: locale === "en" ? "Estimated range" : "Rango estimado",
+  timeline: locale === "en" ? "Estimated timeline" : "Timeline estimado",
+  disclaimer:
+    locale === "en"
+      ? "Estimate only. Final scope and price are confirmed in the proposal."
+      : "Solo estimación. El alcance y precio final se confirman en propuesta.",
+  pick: locale === "en" ? "Pick a package" : "Elige un paquete",
+  cta: locale === "en" ? "Quote on WhatsApp" : "Cotizar por WhatsApp",
+  copy: locale === "en" ? "Copy summary" : "Copiar resumen",
+  copied: locale === "en" ? "Copied" : "Copiado"
+};
+
+const initialStepText = `${t.step} 1 ${t.of} 6 · ${t.steps[0]}`;
+---
+
+<section class="xq" aria-label={t.trigger} data-reveal>
+  <div class="glass card xq__card">
+    <div>
+      <div class="pill">{t.trigger}</div>
+      <div class="h2" style="margin-top:14px;">
+        {locale === "en" ? "Get an estimate in ~60s." : "Obtén una estimación en ~60s."}
+      </div>
+      <p class="muted" style="margin:10px 0 0; max-width:76ch;">{t.triggerHint}</p>
+    </div>
+    <div class="xq__cta">
+      <button class="btn btn-primary" type="button" aria-label={t.ariaOpen} data-open-cotizador>
+        {t.trigger}
+      </button>
+    </div>
+  </div>
+</section>
+
+<script is:inline define:vars={{ STR: t, PRICING, PHONE: WHATSAPP_PHONE_E164 }}>
+  (function () {
+    function boot() {
+      const overlay = document.querySelector("[data-cotizador-overlay]");
+      const dialog = document.querySelector("[data-cotizador-dialog]");
+      const form = document.querySelector("[data-cotizador-form]");
+      const btnClose = document.querySelector("[data-cotizador-close]");
+      if (!overlay || !dialog || !form || !btnClose) return;
+
+    const cssEscape =
+      (window.CSS && typeof window.CSS.escape === "function" && window.CSS.escape) ||
+      ((s) => String(s || "").replace(/["\\]/g, "\\$&"));
+
+    const panes = Array.from(dialog.querySelectorAll("[data-step]"));
+    const chips = Array.from(dialog.querySelectorAll("[data-step-chip]"));
+    const btnBack = dialog.querySelector("[data-back]");
+    const btnNext = dialog.querySelector("[data-next]");
+    const stepLabel = dialog.querySelector("[data-cotizador-step]");
+    const outPkg = dialog.querySelector("[data-out-pkg]");
+    const outPrice = dialog.querySelector("[data-out-price]");
+    const outTime = dialog.querySelector("[data-out-time]");
+    const btnCopy = dialog.querySelector("[data-copy]");
+    const aWa = dialog.querySelector("[data-wa]");
+    const pickBtns = Array.from(dialog.querySelectorAll("[data-pick-package]"));
+
+    const focusableSelector =
+      'button:not([disabled]),[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+
+    const STORAGE_KEY = "vexora_cotizador_v1";
+    let prevActive = null;
+
+    const state = {
+      service: "",
+      scope: "",
+      urgency: "",
+      deadline: "",
+      budget: "",
+      integrations: [],
+      extras: [],
+      site: "",
+      note: "",
+      package: ""
+    };
+
+    function readDraft() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (!parsed || typeof parsed !== "object") return;
+        Object.assign(state, parsed);
+      } catch {}
+    }
+
+    function writeDraft() {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch {}
+    }
+
+    function roundTo(n, step) {
+      return Math.round(n / step) * step;
+    }
+
+    function fmtMXN(n) {
+      const loc = document.body?.dataset?.locale === "en" ? "en-US" : "es-MX";
+      return new Intl.NumberFormat(loc, { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
+    }
+
+    function clampPackage(id) {
+      if (id === "starter" || id === "core" || id === "scale") return id;
+      return "";
+    }
+
+    function recommendPackage() {
+      const svc = state.service;
+      const scope = state.scope;
+      const urgency = state.urgency;
+      const hi = String(state.budget || "").includes("$15k–$26k") || String(state.budget || "").includes("15k–$26k");
+
+      let pkg = "core";
+      if (scope === "mvp") pkg = "starter";
+      if (scope === "complex") pkg = "scale";
+      if (svc === "WhatsApp + IA" || svc === "WhatsApp + AI") pkg = "scale";
+      if (svc === "Automatizaciones" || svc === "Automations") pkg = scope === "mvp" ? "core" : "scale";
+      if (urgency === "rush" && pkg === "starter") pkg = "core";
+      if (hi) pkg = pkg === "starter" ? "core" : pkg;
+      return pkg;
+    }
+
+    function estimate() {
+      const pricing = Array.isArray(PRICING) ? PRICING : [];
+      const basePkg = state.package || recommendPackage();
+      const base = pricing.find((p) => p.id === basePkg) || pricing[0];
+      const basePrice = base ? Number(base.priceOneTimeMXN || 0) : 0;
+
+      const svc = state.service;
+      const scope = state.scope;
+      const urgency = state.urgency;
+
+      let mult = 1;
+      if (svc === "Minecraft") mult *= 1.12;
+      if (svc === "Discord") mult *= 1.05;
+      if (svc === "Automatizaciones" || svc === "Automations") mult *= 1.18;
+      if (svc === "WhatsApp + IA" || svc === "WhatsApp + AI") mult *= 1.35;
+
+      if (scope === "mvp") mult *= 0.92;
+      if (scope === "complex") mult *= 1.25;
+      if (urgency === "rush") mult *= 1.2;
+
+      mult *= 1 + Math.min(0.22, (state.integrations.length || 0) * 0.05 + (state.extras.length || 0) * 0.03);
+
+      const mid = basePrice * mult;
+      let low = roundTo(mid * 0.85, 500);
+      let high = roundTo(mid * 1.15, 500);
+      if (high > 26000) {
+        high = 26000;
+        low = Math.min(low, 23500);
+      }
+      if (low > high) low = Math.max(0, high - 3000);
+
+      const timeline = (function () {
+        const loc = document.body?.dataset?.locale === "en" ? "en" : "es";
+        const byPkg = {
+          starter: loc === "en" ? "7–14 days" : "7–14 días",
+          core: loc === "en" ? "2–4 weeks" : "2–4 semanas",
+          scale: loc === "en" ? "4–8 weeks" : "4–8 semanas"
+        };
+        let tl = byPkg[basePkg] || byPkg.core;
+        if (urgency === "rush") tl = loc === "en" ? "1–2 weeks (rush)" : "1–2 semanas (urgente)";
+        if (state.deadline) {
+          try {
+            const d = new Date(state.deadline + "T12:00:00");
+            tl = new Intl.DateTimeFormat(loc === "en" ? "en-US" : "es-MX", {
+              year: "numeric",
+              month: "short",
+              day: "2-digit"
+            }).format(d);
+          } catch {}
+        }
+        return tl;
+      })();
+
+      return { basePkg, low, high, timeline };
+    }
+
+    function buildText({ basePkg, timeline }) {
+      const loc = document.body?.dataset?.locale || "es";
+      const svc = state.service || (loc === "en" ? "Service" : "Servicio");
+      const pkgName = (Array.isArray(PRICING) ? PRICING : []).find((p) => p.id === basePkg)?.name || basePkg;
+
+      const ident =
+        window.vexoraGetIdentity && typeof window.vexoraGetIdentity === "function" ? window.vexoraGetIdentity() : null;
+
+      const extras = [
+        state.integrations.length ? `${loc === "en" ? "Integrations" : "Integraciones"}: ${state.integrations.join(", ")}` : "",
+        state.extras.length ? `${loc === "en" ? "Extras" : "Extras"}: ${state.extras.join(", ")}` : ""
+      ]
+        .filter(Boolean)
+        .join(" · ");
+
+      const infoParts = [];
+      if (state.site) infoParts.push(`${loc === "en" ? "Site" : "Sitio"}: ${state.site}`);
+      if (state.note) infoParts.push(state.note);
+      const info = infoParts.join(" · ");
+
+      const utm = (window.vexoraGetUTMs && typeof window.vexoraGetUTMs === "function" ? window.vexoraGetUTMs() : {}) || {};
+      const hasUtm = Boolean(utm.utm_source || utm.utm_campaign || utm.utm_medium || utm.utm_content || utm.utm_term);
+      const sourceLine = hasUtm
+        ? `${loc === "en" ? "Source" : "Fuente"}: ${(utm.utm_source || "—")}/${(utm.utm_campaign || "—")}`
+        : `${loc === "en" ? "Source" : "Fuente"}: ${loc === "en" ? "(no UTMs)" : "(sin UTMs)"}`;
+
+      const accountLine =
+        ident && (ident.email || ident.user_id)
+          ? `${loc === "en" ? "Account" : "Cuenta"}: ${ident.email || ident.user_id}`
+          : "";
+
+      if (loc === "en") {
+        return [
+          `Hi Vexora, I'd like a quote for ${svc}.`,
+          `Suggested package: ${pkgName}.`,
+          `Budget: ${state.budget || "Not defined"}.`,
+          `Timeline: ${timeline}.`,
+          `Extras: ${extras || "—"}.`,
+          `Info: ${info || "—"}.`,
+          accountLine,
+          sourceLine
+        ]
+          .filter(Boolean)
+          .join(" ");
+      }
+
+      return [
+        `Hola Vexora, quiero cotizar ${svc}.`,
+        `Paquete sugerido: ${pkgName}.`,
+        `Presupuesto: ${state.budget || "No definido"}.`,
+        `Plazo: ${timeline}.`,
+        `Extras: ${extras || "—"}.`,
+        `Info: ${info || "—"}.`,
+        accountLine,
+        sourceLine
+      ]
+        .filter(Boolean)
+        .join(" ");
+    }
+
+    function renderSummary() {
+      const rec = estimate();
+      const pkg = state.package || rec.basePkg;
+      const pkgName = (Array.isArray(PRICING) ? PRICING : []).find((p) => p.id === pkg)?.name || pkg;
+      if (outPkg) outPkg.textContent = pkgName;
+      if (outPrice) outPrice.textContent = `${fmtMXN(rec.low)}–${fmtMXN(rec.high)}`;
+      if (outTime) outTime.textContent = rec.timeline;
+
+      pickBtns.forEach((b) => b.classList.toggle("is-on", b.getAttribute("data-pick-package") === pkg));
+
+      const msg = buildText({ basePkg: pkg, timeline: rec.timeline });
+      if (aWa) {
+        aWa.setAttribute("href", `https://wa.me/${PHONE}?text=${encodeURIComponent(msg)}`);
+        aWa.setAttribute("data-choose-package", pkg);
+      }
+      writeDraft();
+    }
+
+    function setStep(n) {
+      const max = panes.length - 1;
+      const step = Math.min(max, Math.max(0, n));
+
+      panes.forEach((p) => (p.hidden = p.getAttribute("data-step") !== String(step)));
+      chips.forEach((c) => c.classList.toggle("is-on", c.getAttribute("data-step-chip") === String(step)));
+
+      if (stepLabel) stepLabel.textContent = `${STR.step} ${step + 1} ${STR.of} ${panes.length} · ${STR.steps[step]}`;
+      if (btnBack) btnBack.disabled = step === 0;
+      if (btnNext) btnNext.hidden = step === max;
+      dialog.setAttribute("data-step-active", String(step));
+
+      if (step === max) renderSummary();
+      const err = dialog.querySelector(`[data-step="${step}"] [data-step-err]`);
+      if (err) err.textContent = "";
+
+      const pane = dialog.querySelector(`[data-step="${step}"]`);
+      const first =
+        pane?.querySelector?.("input:not([type='hidden']):not([disabled]), textarea:not([disabled]), select:not([disabled])") || null;
+      if (first && typeof first.focus === "function") {
+        window.setTimeout(() => {
+          try {
+            first.focus();
+          } catch {}
+        }, 0);
+      }
+    }
+
+    function readForm() {
+      const fd = new FormData(form);
+      state.service = String(fd.get("service") || "");
+      state.scope = String(fd.get("scope") || "");
+      state.urgency = String(fd.get("urgency") || "");
+      state.deadline = String(fd.get("deadline") || "");
+      state.budget = String(fd.get("budget") || "");
+      state.site = String(fd.get("site") || "").trim();
+      state.note = String(fd.get("note") || "").trim();
+      state.integrations = fd.getAll("integrations").map(String);
+      state.extras = fd.getAll("extras").map(String);
+    }
+
+    function hydrateForm() {
+      for (const [k, v] of Object.entries(state)) {
+        if (!v) continue;
+        if (k === "integrations" || k === "extras") {
+          const values = Array.isArray(v) ? v : [];
+          const boxes = Array.from(form.querySelectorAll(`input[type="checkbox"][name="${k}"]`));
+          for (const box of boxes) box.checked = values.includes(box.value);
+          continue;
+        }
+        const el = form.querySelector(`[name="${k}"]`);
+        if (!el || el.type === "radio") continue;
+        el.value = String(v);
+      }
+      if (state.service) {
+        const r = form.querySelector(`input[type="radio"][name="service"][value="${cssEscape(state.service)}"]`);
+        if (r) r.checked = true;
+      }
+      if (state.scope) {
+        const r = form.querySelector(`input[type="radio"][name="scope"][value="${cssEscape(state.scope)}"]`);
+        if (r) r.checked = true;
+      }
+      if (state.urgency) {
+        const r = form.querySelector(`input[type="radio"][name="urgency"][value="${cssEscape(state.urgency)}"]`);
+        if (r) r.checked = true;
+      }
+    }
+
+    function validateStep(step) {
+      const pane = dialog.querySelector(`[data-step="${step}"]`);
+      if (!pane) return true;
+      const err = pane.querySelector("[data-step-err]");
+
+      const needRadio = (name) => Boolean(form.querySelector(`input[name="${name}"]:checked`));
+      const ok =
+        (step === 0 && needRadio("service")) ||
+        (step === 1 && needRadio("scope")) ||
+        (step === 2 && needRadio("urgency")) ||
+        (step === 3 && Boolean(form.querySelector('select[name="budget"]')?.value)) ||
+        step >= 4;
+
+      if (!ok && err) err.textContent = STR.required;
+      return ok;
+    }
+
+    function trap(e) {
+      if (e.key !== "Tab") return;
+      const focusables = Array.from(dialog.querySelectorAll(focusableSelector)).filter((x) => !x.hasAttribute("disabled"));
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    function open(triggerEl) {
+      prevActive = document.activeElement;
+      overlay.hidden = false;
+      dialog.hidden = false;
+      document.body.style.overflow = "hidden";
+
+      const prePkg = triggerEl?.getAttribute?.("data-prefill-package") || "";
+      const preSvc = triggerEl?.getAttribute?.("data-prefill-service") || "";
+      if (preSvc) state.service = preSvc;
+      if (prePkg) state.package = clampPackage(prePkg);
+
+      hydrateForm();
+      setStep(0);
+
+      try {
+        window.vexoraTrack?.("open_cotizador", { prefill_package: prePkg, prefill_service: preSvc });
+      } catch {}
+
+      const first = dialog.querySelector(focusableSelector);
+      if (first) first.focus();
+    }
+
+    function close() {
+      document.body.style.overflow = "";
+      overlay.hidden = true;
+      dialog.hidden = true;
+      prevActive?.focus?.();
+      prevActive = null;
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target?.closest?.("[data-open-cotizador]");
+      if (!btn) return;
+      e.preventDefault();
+      readDraft();
+      open(btn);
+    });
+
+    overlay.addEventListener("click", close);
+    btnClose.addEventListener("click", close);
+    window.addEventListener("keydown", (e) => {
+      if (!dialog.hidden && e.key === "Escape") close();
+      if (!dialog.hidden) trap(e);
+    });
+
+    btnBack?.addEventListener("click", () => {
+      const step = Number(dialog.getAttribute("data-step-active") || "0");
+      setStep(step - 1);
+    });
+
+    btnNext?.addEventListener("click", () => {
+      const step = Number(dialog.getAttribute("data-step-active") || "0");
+      readForm();
+      if (!validateStep(step)) return;
+      setStep(step + 1);
+    });
+
+    form.addEventListener("input", () => {
+      readForm();
+      writeDraft();
+      const step = Number(dialog.getAttribute("data-step-active") || "0");
+      if (step === panes.length - 1) renderSummary();
+    });
+
+    pickBtns.forEach((b) =>
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-pick-package");
+        state.package = clampPackage(id);
+        renderSummary();
+      })
+    );
+
+    btnCopy?.addEventListener("click", async () => {
+      const rec = estimate();
+      const pkg = state.package || rec.basePkg;
+      const text = buildText({ basePkg: pkg, timeline: rec.timeline });
+      try {
+        await navigator.clipboard.writeText(text);
+        btnCopy.textContent = STR.copied;
+        window.setTimeout(() => (btnCopy.textContent = STR.copy), 1200);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          btnCopy.textContent = STR.copied;
+          window.setTimeout(() => (btnCopy.textContent = STR.copy), 1200);
+        } catch {}
+        ta.remove();
+      }
+    });
+
+      readDraft();
+      hydrateForm();
+    }
+
+    // The overlay/dialog markup is declared after this script in the component.
+    // Wait until the DOM is ready so querySelector() can find those nodes.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot, { once: true });
+    } else {
+      boot();
+    }
+  })();
+</script>
+
+<style>
+  .xq {
+    padding-block: 0;
+  }
+  .xq__card {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .xq__cta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .xq__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.44);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 80;
+  }
+
+  .xq__dialog {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(860px, calc(100vw - 24px));
+    max-height: min(86vh, 860px);
+    overflow: auto;
+    border-radius: 22px;
+    z-index: 90;
+    padding: 16px;
+  }
+
+  .xq__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 4px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .xq__title {
+    font-family: var(--font-display);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .xq__close {
+    padding: 10px 12px;
+  }
+  .small {
+    font-size: 13px;
+  }
+
+  .xq__body {
+    padding: 12px 4px 6px;
+  }
+  .xq__steps {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .xq__chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0.75;
+  }
+  .xq__chip.is-on {
+    opacity: 1;
+    border-color: rgba(139, 92, 255, 0.34);
+    background: linear-gradient(180deg, rgba(139, 92, 255, 0.18), rgba(255, 255, 255, 0.03));
+  }
+  .xq__chip .n {
+    width: 22px;
+    height: 22px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 12px;
+  }
+  .xq__chip .l {
+    font-size: 12px;
+  }
+
+  .xq__options {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .xq__opt {
+    display: flex;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .xq__opt input {
+    margin-top: 6px;
+    accent-color: var(--accent-1);
+  }
+  .xq__optBox {
+    flex: 1;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    transition:
+      border-color 0.18s ease,
+      background 0.18s ease,
+      transform 0.18s ease;
+  }
+  .xq__opt:hover .xq__optBox {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-1px);
+  }
+  .xq__optTitle {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+
+  .xq__field {
+    display: grid;
+    gap: 8px;
+  }
+  .xq__input {
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .xq__cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .xq__box {
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .xq__boxTitle {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-size: 14px;
+  }
+  .xq__checks {
+    margin-top: 10px;
+    display: grid;
+    gap: 8px;
+  }
+  .xq__check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+  }
+  .xq__check input {
+    accent-color: var(--accent-1);
+  }
+
+  .xq__summary {
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    gap: 10px;
+  }
+  .xq__sumRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .xq__sumVal {
+    font-family: var(--font-display);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+
+  .xq__pick {
+    margin-top: 14px;
+  }
+  .xq__pickRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .xq__pickBtn {
+    text-align: left;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+  }
+  .xq__pickBtn.is-on {
+    border-color: rgba(139, 92, 255, 0.34);
+    background: linear-gradient(180deg, rgba(139, 92, 255, 0.14), rgba(255, 255, 255, 0.03));
+    box-shadow: var(--glow);
+  }
+  .xq__pickName {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .xq__actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .xq__nav {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .xq__err {
+    margin-top: 10px;
+    color: rgba(255, 140, 140, 0.92);
+    min-height: 14px;
+  }
+
+  @media (max-width: 980px) {
+    .xq__cols {
+      grid-template-columns: 1fr;
+    }
+    .xq__pickRow {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="xq__overlay" hidden data-cotizador-overlay></div>
+<section
+  class="xq__dialog glass"
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-label={t.ariaDialog}
+  data-cotizador-dialog
+  id={id}
+>
+  <div class="xq__head">
+    <div>
+      <div class="xq__title">{locale === "en" ? "Express quote" : "Cotizador express"}</div>
+      <div class="muted small" data-cotizador-step>{initialStepText}</div>
+    </div>
+    <button class="btn xq__close" type="button" aria-label={t.close} data-cotizador-close>{t.close}</button>
+  </div>
+
+  <form class="xq__body" data-cotizador-form novalidate>
+    <div class="xq__steps" aria-hidden="true">
+      {t.steps.map((label, idx) => (
+        <div class="xq__chip" data-step-chip={String(idx)}>
+          <span class="n">{idx + 1}</span>
+          <span class="l">{label}</span>
+        </div>
+      ))}
+    </div>
+
+    <section class="xq__pane" data-step="0">
+      <div class="h3">{t.serviceTitle}</div>
+      <p class="muted small" style="margin:10px 0 0;">{t.serviceLead}</p>
+      <div class="xq__options" role="radiogroup" aria-label={t.steps[0]}>
+        {t.services.map((s) => (
+          <label class="xq__opt">
+            <input type="radio" name="service" value={s.v} />
+            <span class="xq__optBox">
+              <span class="xq__optTitle">{s.v}</span>
+              <span class="muted small">{s.d}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      <div class="xq__err muted small" data-step-err></div>
+    </section>
+
+    <section class="xq__pane" data-step="1" hidden>
+      <div class="h3">{t.scopeTitle}</div>
+      <div class="xq__options" role="radiogroup" aria-label={t.steps[1]} style="margin-top:12px;">
+        {t.scopes.map((s) => (
+          <label class="xq__opt">
+            <input type="radio" name="scope" value={s.v} />
+            <span class="xq__optBox">
+              <span class="xq__optTitle">{s.l}</span>
+              <span class="muted small">{s.d}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      <div class="xq__err muted small" data-step-err></div>
+    </section>
+
+    <section class="xq__pane" data-step="2" hidden>
+      <div class="h3">{t.urgencyTitle}</div>
+      <p class="muted small" style="margin:10px 0 0;">{t.urgencyLead}</p>
+      <div class="xq__options" role="radiogroup" aria-label={t.steps[2]} style="margin-top:12px;">
+        {t.urgencyOptions.map((s) => (
+          <label class="xq__opt">
+            <input type="radio" name="urgency" value={s.v} />
+            <span class="xq__optBox">
+              <span class="xq__optTitle">{s.l}</span>
+              <span class="muted small">{s.d}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      <label class="xq__field" style="margin-top:14px;">
+        <span class="muted small">{t.deadline}</span>
+        <input class="xq__input" name="deadline" type="date" />
+      </label>
+      <div class="xq__err muted small" data-step-err></div>
+    </section>
+
+    <section class="xq__pane" data-step="3" hidden>
+      <div class="h3">{t.budgetTitle}</div>
+      <label class="xq__field" style="margin-top:12px;">
+        <span class="muted small">{t.budgetTitle}</span>
+        <select class="xq__input" name="budget" required>
+          <option value="">{t.select}</option>
+          {t.budgetOptions.map((b) => (
+            <option value={b}>{b}</option>
+          ))}
+        </select>
+      </label>
+      <div class="xq__err muted small" data-step-err></div>
+    </section>
+
+    <section class="xq__pane" data-step="4" hidden>
+      <div class="h3">{t.extrasTitle}</div>
+      <div class="xq__cols">
+        <div class="xq__box">
+          <div class="xq__boxTitle">{t.integrationsTitle}</div>
+          <div class="xq__checks">
+            {t.integrations.map((x) => (
+              <label class="xq__check">
+                <input type="checkbox" name="integrations" value={x} />
+                <span>{x}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div class="xq__box">
+          <div class="xq__boxTitle">{locale === "en" ? "Extras" : "Extras"}</div>
+          <div class="xq__checks">
+            {t.extras.map((x) => (
+              <label class="xq__check">
+                <input type="checkbox" name="extras" value={x} />
+                <span>{x}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <label class="xq__field" style="margin-top:14px;">
+        <span class="muted small">{t.site}</span>
+        <input class="xq__input" name="site" type="url" placeholder="https://..." inputmode="url" />
+      </label>
+      <label class="xq__field" style="margin-top:12px;">
+        <span class="muted small">{t.note}</span>
+        <textarea class="xq__input" name="note" rows="4" placeholder={t.notePh}></textarea>
+      </label>
+    </section>
+
+    <section class="xq__pane" data-step="5" hidden>
+      <div class="h3">{t.summaryTitle}</div>
+
+      <div class="xq__summary">
+        <div class="xq__sumRow">
+          <div class="muted small">{t.pkg}</div>
+          <div class="xq__sumVal" data-out-pkg>—</div>
+        </div>
+        <div class="xq__sumRow">
+          <div class="muted small">{t.estimate}</div>
+          <div class="xq__sumVal" data-out-price>—</div>
+        </div>
+        <div class="xq__sumRow">
+          <div class="muted small">{t.timeline}</div>
+          <div class="xq__sumVal" data-out-time>—</div>
+        </div>
+      </div>
+
+      <div class="xq__pick">
+        <div class="muted small" style="margin-bottom:10px;">{t.pick}</div>
+        <div class="xq__pickRow" role="radiogroup" aria-label={t.pick}>
+          {PRICING.map((p) => (
+            <button class="xq__pickBtn" type="button" data-pick-package={p.id} data-choose-package={p.id}>
+              <span class="xq__pickName">{p.name}</span>
+              <span class="muted small">
+                {locale === "en" ? "from " : "desde "}
+                {p.priceOneTimeMXN.toLocaleString(locale === "en" ? "en-US" : "es-MX")} MXN{p.priceOneTimeSuffix}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="xq__actions">
+        <button class="btn" type="button" data-copy>{t.copy}</button>
+        <a class="btn btn-primary" href="#" target="_blank" rel="noreferrer" data-wa>{t.cta}</a>
+      </div>
+
+      <p class="muted small" style="margin:12px 0 0;">{t.disclaimer}</p>
+    </section>
+    <div class="xq__nav">
+      <button class="btn" type="button" data-back>{t.back}</button>
+      <button class="btn btn-primary" type="button" data-next>{t.next}</button>
+    </div>
+  </form>
+</section>
+
+<noscript>
+  <div class="container" style="margin-top:12px;">
+    <div class="glass card muted small">
+      {locale === "en"
+        ? "JavaScript is required for the express quote. You can still message us on WhatsApp."
+        : "Se requiere JavaScript para el cotizador express. Igual puedes escribir por WhatsApp."}
+      <a class="btn btn-primary" style="margin-left:10px;" href={`https://wa.me/${WHATSAPP_PHONE_E164}`} target="_blank" rel="noreferrer">
+        {locale === "en" ? "WhatsApp" : "WhatsApp"}
+      </a>
+    </div>
+  </div>
+</noscript>

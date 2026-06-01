@@ -1,0 +1,47 @@
+:root{
+  /* Brand */
+  --accent-0:#8B5CFF; /* electric violet */
+  --accent-1:#6AE4FF; /* ice-cyan highlight */
+
+  /* Surfaces */
+  --bg-0:#07070B;
+  --bg-1:#0B0B12;
+  --surface:rgba(255,255,255,.06);
+  --surface-2:rgba(255,255,255,.09);
+  --stroke:rgba(255,255,255,.14);
+  --stroke-2:rgba(255,255,255,.22);
+
+  /* Text */
+  --text:#EDEDF3;
+  --muted:#B8B8C7;
+  --faint:rgba(237,237,243,.72);
+
+  /* Shadow / glow */
+  --shadow: 0 18px 60px rgba(0,0,0,.55);
+  --glow: 0 0 0 1px rgba(255,255,255,.06), 0 18px 70px rgba(139,92,255,.20);
+
+  /* Radii */
+  --r-1:12px;
+  --r-2:18px;
+  --r-3:28px;
+
+  /* Spacing */
+  --s-1:8px;
+  --s-2:12px;
+  --s-3:16px;
+  --s-4:24px;
+  --s-5:32px;
+  --s-6:48px;
+  --s-7:72px;
+
+  /* Typography */
+  --font-body:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-display:"Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+
+  --container: 1120px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  :root{ scroll-behavior:auto; }
+}
+

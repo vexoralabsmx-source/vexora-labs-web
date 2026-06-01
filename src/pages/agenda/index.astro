@@ -1,0 +1,130 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import HoursWidget from "@/components/HoursWidget.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+
+const RAW_EMBED_URL = (import.meta.env.PUBLIC_SCHEDULING_EMBED_URL ?? "").trim();
+const FALLBACK_URL = (import.meta.env.PUBLIC_SCHEDULING_FALLBACK_URL ?? "").trim();
+const RAW_PROVIDER = (import.meta.env.PUBLIC_SCHEDULING_PROVIDER ?? "").trim();
+const EMBED_URL = RAW_EMBED_URL || FALLBACK_URL;
+const guessProvider = (url: string) => {
+  const u = url.toLowerCase();
+  if (u.includes("calendly.com")) return "Calendly";
+  if (u.includes("cal.com")) return "Cal.com";
+  return "";
+};
+const PROVIDER = RAW_PROVIDER || guessProvider(FALLBACK_URL || RAW_EMBED_URL);
+const IS_CALENDLY =
+  PROVIDER.toLowerCase() === "calendly" ||
+  RAW_EMBED_URL.toLowerCase().includes("calendly.com") ||
+  FALLBACK_URL.toLowerCase().includes("calendly.com");
+const isDev = import.meta.env.DEV;
+---
+<BaseLayout
+  page="agenda"
+  title={`Agenda — ${BRAND}`}
+  description="Agenda una llamada. Embed de Cal.com/Calendly (si está configurado) + fallback a WhatsApp."
+  canonicalPath="/agenda/"
+>
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <div class="pill">Agenda</div>
+        <h1 class="h1" style="margin-top:14px;">Agendemos 15–30 min.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:72ch;">
+          Para avanzar rápido: objetivo, deadline y presupuesto aproximado. Si no ves disponibilidad, escríbenos por WhatsApp y
+          coordinamos.
+        </p>
+        <div class="cta" style="margin-top:16px;">
+          <a class="btn btn-primary" href={getWhatsAppLink("agenda")} target="_blank" rel="noreferrer">Escribir por WhatsApp</a>
+          {FALLBACK_URL ? (
+            <a class="btn" href={FALLBACK_URL} target="_blank" rel="noreferrer" data-track="open_scheduler_fallback">
+              Abrir agenda {PROVIDER ? `(${PROVIDER})` : ""}
+            </a>
+          ) : null}
+        </div>
+        {!EMBED_URL ? (
+          <div class="note muted small" style="margin-top:12px;">
+            Agenda no configurada. Define `PUBLIC_SCHEDULING_EMBED_URL` o `PUBLIC_SCHEDULING_FALLBACK_URL` (opcional
+            `PUBLIC_SCHEDULING_PROVIDER`).
+          </div>
+        ) : null}
+        {!EMBED_URL && isDev ? (
+          <div class="note muted small" style="margin-top:10px;">
+            Tip dev: agrega `.env` con `PUBLIC_SCHEDULING_EMBED_URL=...` (o `PUBLIC_SCHEDULING_FALLBACK_URL=...`) y reinicia
+            `npm run dev`.
+          </div>
+        ) : null}
+      </div>
+
+      <div data-reveal>
+        <HoursWidget />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="glass card" data-reveal>
+        <div class="h2">Disponibilidad</div>
+        <p class="muted" style="margin:10px 0 0; max-width:78ch;">
+          Horarios mostrados en tu zona. Referencia rápida: CDMX/Madrid/Los Angeles arriba.
+        </p>
+
+        {EMBED_URL ? (
+          <div class="frameWrap" style="margin-top:14px;">
+            {IS_CALENDLY ? (
+              <>
+                <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" />
+                <div class="calendly-inline-widget" data-url={EMBED_URL} style="min-width:320px;height:620px;"></div>
+                <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+              </>
+            ) : (
+              <iframe
+                class="frame"
+                src={EMBED_URL}
+                title="Agenda Vexora"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            )}
+          </div>
+        ) : (
+          <div class="frameWrap frameWrap--empty" style="margin-top:14px;">
+            <div class="muted">
+              Sin embed configurado. Usa WhatsApp para agendar.
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .small{ font-size: 13px; }
+    .frameWrap{
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.12);
+      overflow:hidden;
+      min-height: 520px;
+    }
+    .frameWrap--empty{
+      display:grid;
+      place-items:center;
+      padding: 18px;
+      min-height: 240px;
+    }
+    .frame{
+      width:100%;
+      height: 620px;
+      border:0;
+      display:block;
+    }
+    @media (max-width: 980px){
+      .frame{ height: 720px; }
+    }
+  </style>
+</BaseLayout>

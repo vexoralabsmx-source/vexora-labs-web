@@ -1,0 +1,112 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import FAQAccordion from "@/components/FAQAccordion.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+
+const items = [
+  {
+    q: "Que incluye una cotizacion?",
+    a: "Objetivo, alcance, entregables, tiempos, riesgos y opciones (paquete o custom). Si algo es incierto, lo explicitamos."
+  },
+  {
+    q: "Trabajan con contratos y facturacion?",
+    a: "Podemos trabajar con acuerdo simple por entregables y calendario. Si necesitas facturacion, lo coordinamos segun el caso."
+  },
+  {
+    q: "Hacen bots de Discord personalizados?",
+    a: "Si: desde configuracion avanzada con bots existentes hasta bots a medida. Siempre con auditoria, roles claros y sin abuso."
+  },
+  {
+    q: "Pueden ayudar con antiraid y seguridad en comunidades?",
+    a: "Si: hardening por capas, rate-limits, verificacion, quarantine, logs y playbooks. No hacemos acciones ofensivas ni ilegales."
+  },
+  {
+    q: "WhatsApp + IA: es legal?",
+    a: "Depende del enfoque. Nosotros proponemos integraciones oficiales (WhatsApp Business API) y flujos con consentimiento. Nada de spam."
+  },
+  {
+    q: "En cuanto tiempo entregan una web?",
+    a: "Una landing premium suele tomar 10–18 dias habiles. Multipagina o integraciones complejas pueden requerir mas."
+  },
+  {
+    q: "Pueden mejorar una web existente?",
+    a: "Si. Hacemos auditoria de performance/SEO/UX y proponemos un plan: quick wins y refactor por etapas."
+  },
+  {
+    q: "Que pasa si cambian politicas o APIs?",
+    a: "Te avisamos y proponemos un fix o alternativa. Por eso entregamos documentacion y recomendamos soporte mensual si es critico."
+  },
+  {
+    q: "Ofrecen soporte despues de entregar?",
+    a: "Si. Hay ventana de ajustes post-entrega y opcion de soporte mensual (mantenimiento, mejoras y monitoreo basico)."
+  },
+  {
+    q: "Pueden garantizar ventas o crecimiento?",
+    a: "No. Podemos mejorar conversion, experiencia y eficiencia, pero los resultados dependen de oferta, mercado y operacion."
+  }
+];
+---
+<BaseLayout
+  page="faq"
+  title={`FAQ — ${BRAND}`}
+  description="Preguntas frecuentes sobre Vexora Labs: procesos, tiempos, precios, seguridad, Discord, Minecraft y WhatsApp + IA."
+  canonicalPath="/faq/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">FAQ</div>
+        <h1 class="h1" style="margin-top:14px;">Respuestas directas.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:78ch;">
+          Si tu duda no esta aqui, escribe por WhatsApp y te respondemos con claridad (sin rodeos).
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("faq")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <a class="btn" href="/contacto/">Contactar</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <FAQAccordion items={items} />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card end" data-reveal>
+      <div>
+        <h2 class="h2">Listo para avanzar?</h2>
+        <p class="muted" style="margin:10px 0 0;">
+          Comparte objetivo + plazo + presupuesto aproximado. Te damos el siguiente paso.
+        </p>
+      </div>
+      <div class="end__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("faq")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <a class="btn" href="/precios/">Ver precios</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .end{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .end__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+  </style>
+</BaseLayout>
+

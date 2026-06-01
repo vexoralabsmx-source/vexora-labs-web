@@ -1,0 +1,105 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ExpressQuote from "@/components/ExpressQuote.astro";
+import PricingComparator from "@/components/PricingComparator.astro";
+import { BRAND } from "@/lib/constants";
+import { getWhatsAppLink } from "@/lib/whatsapp";
+import { routeFor } from "@/lib/routes";
+---
+<BaseLayout
+  page="precios"
+  title={`Precios — ${BRAND}`}
+  description="Paquetes claros (pago unico) + opcion de soporte mensual. Comparador premium, entregables y disclaimers de seguridad."
+  canonicalPath="/precios/"
+>
+  <section class="section">
+    <div class="container head glass card" data-reveal>
+      <div>
+        <div class="pill">Precios</div>
+        <h1 class="h1" style="margin-top:14px;">Paquetes diseñados para operar.</h1>
+        <p class="muted" style="margin:12px 0 0; max-width:78ch;">
+          Preferimos claridad sobre "barato". Cotizamos por impacto y complejidad. Si necesitas algo especial, hacemos un plan custom.
+        </p>
+      </div>
+      <div class="head__cta">
+        <a class="btn btn-primary" href={getWhatsAppLink("precios")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
+        <button class="btn" type="button" data-open-cotizador>Cotizador express</button>
+        <a class="btn" href="/contacto/">Enviar brief</a>
+        <a class="btn" href={routeFor("agenda", "es")} data-track="open_agenda">Agendar llamada</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <ExpressQuote />
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <PricingComparator page="precios" />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Custom / Enterprise</h2>
+        <p class="muted" style="margin:12px 0 0;">
+          Si tu proyecto mezcla web + Discord + automatizaciones + WhatsApp Business API, proponemos etapas:
+          discovery, build y operacion. Asi reduces riesgo y evitas retrabajo.
+        </p>
+        <ul class="list">
+          <li>Arquitectura y roadmap por hitos.</li>
+          <li>Seguridad y permisos (minimo privilegio).</li>
+          <li>Playbooks + handoff a tu equipo.</li>
+          <li>Monitoreo y QA continuo (opcional).</li>
+        </ul>
+      </div>
+      <div class="glass card" data-reveal>
+        <h2 class="h2">Notas importantes</h2>
+        <ul class="list">
+          <li>No prometemos resultados imposibles (ventas garantizadas, "sin fallas", etc.).</li>
+          <li>No hacemos hacks, spam, scraping o accesos no autorizados.</li>
+          <li>WhatsApp + IA requiere rutas oficiales (WABA) y suele incluir costos de proveedor/licencias.</li>
+          <li>Hosting, dominios y licencias no estan incluidos salvo acuerdo.</li>
+        </ul>
+        <div class="ctaBox">
+          <div>
+            <div class="ctaBox__t">Quiero un plan custom</div>
+            <div class="muted small">Dinos objetivo, stack, plazos y restricciones.</div>
+          </div>
+          <a class="btn btn-primary" href={getWhatsAppLink("precios")} target="_blank" rel="noreferrer">Escribir</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .head__cta{ display:flex; gap:10px; flex-wrap:wrap; }
+    .list{ margin: 14px 0 0; padding-left: 18px; color: rgba(237,237,243,.84); }
+    .list li{ margin: 10px 0; }
+    .small{ font-size: 13px; }
+    .ctaBox{
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .ctaBox__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+  </style>
+</BaseLayout>
