@@ -3,6 +3,7 @@ import { getServiceCategories, getServices } from "@/lib/services";
 import { getWhatsAppLink, type PageKey } from "@/lib/whatsapp";
 import { localeFromPath, type Locale } from "@/lib/i18n";
 import { routeFor } from "@/lib/routes";
+import { formatMoneyFromMXN } from "@/lib/currency";
 
 type Props = { page: PageKey };
 const { page } = Astro.props;
@@ -53,6 +54,11 @@ const t = {
           <div class="svc__cat">{categoryLabel[s.category]}</div>
         </div>
         <p class="muted" style="margin:10px 0 14px;">{s.summary}</p>
+        <div class="svc__meta">
+          <span>{locale === "en" ? "From" : "Desde"} {formatMoneyFromMXN(s.priceFromMXN, "MXN")}</span>
+          <span>{s.estimatedTime}</span>
+        </div>
+        <div class="svc__ideal muted">{locale === "en" ? "Ideal for" : "Ideal para"}: {s.idealFor}</div>
         <ul class="svc__list">
           {s.bullets.map((b) => (
             <li>{b}</li>
@@ -155,11 +161,29 @@ const t = {
     white-space:nowrap;
   }
   .svc__list{
-    margin:0;
+    margin:14px 0 0;
     padding-left: 18px;
     color: rgba(237,237,243,.82);
   }
   .svc__list li{ margin: 6px 0; }
+  .svc__meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom: 10px;
+  }
+  .svc__meta span{
+    padding:7px 9px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.035);
+    color:rgba(237,237,243,.86);
+    font-size:13px;
+  }
+  .svc__ideal{
+    font-size:13px;
+    line-height:1.5;
+  }
   .svc__bottom{
     display:flex;
     gap:10px;

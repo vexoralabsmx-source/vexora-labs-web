@@ -1,19 +1,21 @@
 :root{
   /* Brand */
-  --accent-0:#8B5CFF; /* electric violet */
-  --accent-1:#6AE4FF; /* ice-cyan highlight */
+  --accent-0:#8B5CF6; /* premium violet */
+  --accent-1:#00E5FF; /* tech cyan */
+  --accent-2:#2563EB; /* premium blue */
+  --success:#22C55E;
 
   /* Surfaces */
-  --bg-0:#07070B;
-  --bg-1:#0B0B12;
+  --bg-0:#030712;
+  --bg-1:#050816;
   --surface:rgba(255,255,255,.06);
   --surface-2:rgba(255,255,255,.09);
   --stroke:rgba(255,255,255,.14);
   --stroke-2:rgba(255,255,255,.22);
 
   /* Text */
-  --text:#EDEDF3;
-  --muted:#B8B8C7;
+  --text:#FFFFFF;
+  --muted:#A1A1AA;
   --faint:rgba(237,237,243,.72);
 
   /* Shadow / glow */
@@ -44,4 +46,3 @@
 @media (prefers-reduced-motion: reduce){
   :root{ scroll-behavior:auto; }
 }
-

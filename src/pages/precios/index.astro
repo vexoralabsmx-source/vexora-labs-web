@@ -5,20 +5,22 @@ import PricingComparator from "@/components/PricingComparator.astro";
 import { BRAND } from "@/lib/constants";
 import { getWhatsAppLink } from "@/lib/whatsapp";
 import { routeFor } from "@/lib/routes";
+import { PRICING_NOTE } from "@/lib/pricing";
 ---
 <BaseLayout
   page="precios"
-  title={`Precios — ${BRAND}`}
-  description="Paquetes claros (pago unico) + opcion de soporte mensual. Comparador premium, entregables y disclaimers de seguridad."
+  title={`Precios accesibles — ${BRAND}`}
+  description="Paquetes desde para branding, webs, landing pages, tiendas online, bots de Discord, Minecraft y automatizaciones con diseno premium y alcance claro."
   canonicalPath="/precios/"
 >
   <section class="section">
     <div class="container head glass card" data-reveal>
       <div>
         <div class="pill">Precios</div>
-        <h1 class="h1" style="margin-top:14px;">Paquetes diseñados para operar.</h1>
+        <h1 class="h1" style="margin-top:14px;">Precios premium accesibles, sin esconder el alcance.</h1>
         <p class="muted" style="margin:12px 0 0; max-width:78ch;">
-          Preferimos claridad sobre "barato". Cotizamos por impacto y complejidad. Si necesitas algo especial, hacemos un plan custom.
+          Vexora Labs no compite por verse barato: compite por claridad, diseno profesional y entrega real.
+          {PRICING_NOTE}
         </p>
       </div>
       <div class="head__cta">
@@ -45,24 +47,24 @@ import { routeFor } from "@/lib/routes";
   <section class="section">
     <div class="container split">
       <div class="glass card" data-reveal>
-        <h2 class="h2">Custom / Enterprise</h2>
+        <h2 class="h2">Proyectos a medida</h2>
         <p class="muted" style="margin:12px 0 0;">
-          Si tu proyecto mezcla web + Discord + automatizaciones + WhatsApp Business API, proponemos etapas:
-          discovery, build y operacion. Asi reduces riesgo y evitas retrabajo.
+          Si tu proyecto mezcla web + bot + automatizaciones + integraciones, proponemos etapas:
+          definicion, diseno, desarrollo, QA y entrega. Asi reduces riesgo y evitas retrabajo.
         </p>
         <ul class="list">
           <li>Arquitectura y roadmap por hitos.</li>
-          <li>Seguridad y permisos (minimo privilegio).</li>
-          <li>Playbooks + handoff a tu equipo.</li>
+          <li>Diseno, copy y estructura orientada a conversion.</li>
+          <li>Documentacion + handoff a tu equipo.</li>
           <li>Monitoreo y QA continuo (opcional).</li>
         </ul>
       </div>
       <div class="glass card" data-reveal>
         <h2 class="h2">Notas importantes</h2>
         <ul class="list">
+          <li>Los precios son desde y se ajustan al alcance real.</li>
           <li>No prometemos resultados imposibles (ventas garantizadas, "sin fallas", etc.).</li>
           <li>No hacemos hacks, spam, scraping o accesos no autorizados.</li>
-          <li>WhatsApp + IA requiere rutas oficiales (WABA) y suele incluir costos de proveedor/licencias.</li>
           <li>Hosting, dominios y licencias no estan incluidos salvo acuerdo.</li>
         </ul>
         <div class="ctaBox">

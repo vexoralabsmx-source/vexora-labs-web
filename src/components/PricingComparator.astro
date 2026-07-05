@@ -1,5 +1,5 @@
 ---
-import { getPricing, getSupportAddon } from "@/lib/pricing";
+import { getPricing, getSupportAddon, PRICING_NOTE } from "@/lib/pricing";
 import { getWhatsAppLink, type PageKey } from "@/lib/whatsapp";
 import { CURRENCIES, DEFAULT_CURRENCY, formatMoneyFromMXN } from "@/lib/currency";
 import { localeFromPath, type Locale } from "@/lib/i18n";
@@ -12,11 +12,11 @@ const PRICING = getPricing(locale);
 const SUPPORT_ADDON = getSupportAddon(locale);
 const t = {
   aria: locale === "en" ? "Package comparison" : "Comparador de paquetes",
-  title: locale === "en" ? "Clear packages. No surprises." : "Paquetes claros. Sin sorpresas.",
+  title: locale === "en" ? "Accessible premium pricing." : "Precios accesibles para empezar profesional.",
   lead:
     locale === "en"
-      ? "One-time project pricing. Add monthly support if you want continuity."
-      : "Precio por proyecto (pago unico). Puedes agregar soporte mensual si quieres continuidad.",
+      ? "Starting prices by project type. The final proposal adapts to scope, urgency, screens, integrations, and support."
+      : "Precios desde por tipo de proyecto. La propuesta final se adapta al alcance, urgencia, pantallas, integraciones y soporte.",
   currency: locale === "en" ? "Currency" : "Moneda",
   supportToggle: locale === "en" ? "Show monthly support" : "Mostrar soporte mensual",
   quote: locale === "en" ? "Get a quote on WhatsApp" : "Cotizar por WhatsApp",
@@ -31,37 +31,18 @@ const t = {
   talk: locale === "en" ? "Talk to Vexora" : "Hablar con Vexora",
   quoteShort: locale === "en" ? "Quote" : "Cotizar",
   expressShort: locale === "en" ? "Estimate" : "Estimar",
-  tableTitle: locale === "en" ? "Quick comparison" : "Comparador rapido",
+  tableTitle: locale === "en" ? "Service and package guide" : "Guia de paquetes y servicios",
   tableLead:
     locale === "en"
-      ? "A visual guide to decide. Exact scope is defined in the proposal."
-      : "Guia visual para decidir. El alcance exacto se define en la propuesta.",
-  thIncludes: locale === "en" ? "Includes" : "Incluye",
-  rows: {
-    ui: locale === "en" ? "Design + UI system" : "Diseño + UI system",
-    seo: locale === "en" ? "Technical SEO (titles/OG/sitemap)" : "SEO tecnico (titles/OG/sitemap)",
-    anim: locale === "en" ? "Premium animations" : "Animaciones premium",
-    integ: locale === "en" ? "Integrations / automations" : "Integraciones / automatizaciones",
-    sec: locale === "en" ? "Security & hardening" : "Seguridad y hardening",
-    docs: locale === "en" ? "Documentation + handoff" : "Documentacion + handoff"
-  },
-  cells: {
-    base: locale === "en" ? "Base" : "Base",
-    full: locale === "en" ? "Full" : "Completo",
-    fullScale: locale === "en" ? "Full + scalable" : "Completo + escalable",
-    yes: locale === "en" ? "Yes" : "Si",
-    yesAudit: locale === "en" ? "Yes + audit" : "Si + auditoria",
-    min: locale === "en" ? "Minimal" : "Minimas",
-    reveal: locale === "en" ? "Reveal + micro" : "Reveal + micro",
-    sequences: locale === "en" ? "Reveal + sequences" : "Reveal + secuencias",
-    dash: "—",
-    one: "1",
-    multistep: locale === "en" ? "Multi-step" : "Multi-step",
-    best: locale === "en" ? "Best practices" : "Buenas practicas",
-    basicQa: locale === "en" ? "Basic + QA" : "Basico + QA",
-    layered: locale === "en" ? "Layered + runbook" : "Por capas + runbook"
-  }
+      ? "Use this as a visual guide. Exact scope is defined in the proposal."
+      : "Usala como guia visual. El alcance exacto se define en la propuesta.",
+  thPackage: locale === "en" ? "Package" : "Paquete",
+  thIdeal: locale === "en" ? "Ideal for" : "Ideal para",
+  thPrice: locale === "en" ? "Starting at" : "Precio desde",
+  thTime: locale === "en" ? "Estimated time" : "Tiempo estimado",
+  thIncludes: locale === "en" ? "Key includes" : "Incluye clave"
 };
+const FEATURED_IDS = new Set(["landing-starter", "bot-discord-pro", "landing-premium", "vexora-elite"]);
 ---
 <section class="pricing glass card" aria-label={t.aria}>
   <div class="pricing__head">
@@ -92,15 +73,19 @@ const t = {
   </div>
 
   <div class="muted small" style="margin:-6px 0 14px;">
-    {t.fxNote}
+    {PRICING_NOTE} {t.fxNote}
   </div>
 
   <div class="tiers">
     {PRICING.map((tier) => (
-      <article class={`tier ${tier.id === "core" ? "is-featured" : ""}`} data-reveal data-tier={tier.id}>
+      <article class={`tier ${FEATURED_IDS.has(tier.id) ? "is-featured" : ""}`} data-reveal data-tier={tier.id}>
         <div class="tier__top">
-          <div class="tier__name">{tier.name}</div>
+          <div>
+            <div class="tier__badge">{tier.badge}</div>
+            <div class="tier__name">{tier.name}</div>
+          </div>
           <div class="tier__price">
+            <span class="tier__from muted">{t.from}</span>
             <span
               class="tier__amount"
               data-money-mxn={String(tier.priceOneTimeMXN)}
@@ -112,14 +97,16 @@ const t = {
             <span class="tier__small muted">{t.oneTime}</span>
           </div>
         </div>
+        <div class="tier__description">{tier.description}</div>
         <div class="muted">{tier.ideal}</div>
+        <div class="tier__time">{tier.estimatedTime}</div>
         <ul class="tier__list">
           {tier.includes.map((x) => (
             <li>{x}</li>
           ))}
         </ul>
         <div class="tier__not">
-          <div class="muted small">No incluido / depende del alcance</div>
+          <div class="muted small">{locale === "en" ? "Not included / depends on scope" : "No incluido / depende del alcance"}</div>
           <ul class="tier__list tier__list--thin">
             {tier.notIncluded.map((x) => (
               <li>{x}</li>
@@ -174,49 +161,28 @@ const t = {
       <table class="table">
         <thead>
           <tr>
+            <th scope="col">{t.thPackage}</th>
+            <th scope="col">{t.thIdeal}</th>
+            <th scope="col">{t.thPrice}</th>
+            <th scope="col">{t.thTime}</th>
             <th scope="col">{t.thIncludes}</th>
-            <th scope="col">Starter</th>
-            <th scope="col">Core</th>
-            <th scope="col">Scale</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">{t.rows.ui}</th>
-            <td>{t.cells.base}</td>
-            <td>{t.cells.full}</td>
-            <td>{t.cells.fullScale}</td>
-          </tr>
-          <tr>
-            <th scope="row">{t.rows.seo}</th>
-            <td>{t.cells.base}</td>
-            <td>{t.cells.yes}</td>
-            <td>{t.cells.yesAudit}</td>
-          </tr>
-          <tr>
-            <th scope="row">{t.rows.anim}</th>
-            <td>{t.cells.min}</td>
-            <td>{t.cells.reveal}</td>
-            <td>{t.cells.sequences}</td>
-          </tr>
-          <tr>
-            <th scope="row">{t.rows.integ}</th>
-            <td>{t.cells.dash}</td>
-            <td>{t.cells.one}</td>
-            <td>{t.cells.multistep}</td>
-          </tr>
-          <tr>
-            <th scope="row">{t.rows.sec}</th>
-            <td>{t.cells.best}</td>
-            <td>{t.cells.basicQa}</td>
-            <td>{t.cells.layered}</td>
-          </tr>
-          <tr>
-            <th scope="row">{t.rows.docs}</th>
-            <td>{t.cells.yes}</td>
-            <td>{t.cells.yes}</td>
-            <td>{locale === "en" ? "Yes (ops)" : "Si (operacion)"}</td>
-          </tr>
+          {PRICING.map((tier) => (
+            <tr>
+              <th scope="row">{tier.name}</th>
+              <td>{tier.ideal}</td>
+              <td>
+                <span data-money-mxn={String(tier.priceOneTimeMXN)} data-money-suffix={tier.priceOneTimeSuffix ?? ""}>
+                  {formatMoneyFromMXN(tier.priceOneTimeMXN, "MXN")}
+                  {tier.priceOneTimeSuffix ?? ""}
+                </span>
+              </td>
+              <td>{tier.estimatedTime}</td>
+              <td>{tier.includes.slice(0, 3).join(" · ")}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -358,7 +324,7 @@ const t = {
 
   .tiers{
     display:grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap:12px;
   }
   .tier{
@@ -380,9 +346,36 @@ const t = {
     margin-bottom: 10px;
   }
   .tier__name{ font-family: var(--font-display); font-weight:700; letter-spacing:-.02em; }
+  .tier__badge{
+    width:max-content;
+    max-width:100%;
+    margin-bottom:8px;
+    padding:6px 9px;
+    border-radius:999px;
+    border:1px solid rgba(106,228,255,.22);
+    background:rgba(106,228,255,.08);
+    color:rgba(237,237,243,.86);
+    font-size:12px;
+  }
   .tier__price{ text-align:right; }
+  .tier__from{ display:block; font-size: 11px; margin-bottom: 2px; }
   .tier__amount{ font-family: var(--font-display); font-weight:700; letter-spacing:-.02em; }
   .tier__small{ display:block; font-size: 12px; margin-top: 2px; }
+  .tier__description{
+    margin-bottom:8px;
+    color:rgba(237,237,243,.90);
+    line-height:1.5;
+  }
+  .tier__time{
+    width:max-content;
+    margin-top:12px;
+    padding:7px 9px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.03);
+    color:rgba(237,237,243,.80);
+    font-size:13px;
+  }
   .tier__list{
     margin: 14px 0 0;
     padding-left: 18px;
@@ -432,7 +425,7 @@ const t = {
   .table{
     width: 100%;
     border-collapse: collapse;
-    min-width: 720px;
+    min-width: 880px;
   }
   .table th, .table td{
     padding: 12px 12px;
@@ -455,9 +448,12 @@ const t = {
     background: rgba(255,255,255,.02);
   }
 
-  @media (max-width: 1100px){
-    .tiers{ grid-template-columns: 1fr; }
+  @media (max-width: 1180px){
+    .tiers{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .addon{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px){
+    .tiers{ grid-template-columns: 1fr; }
   }
   @media (max-width: 720px){
     .pricing__head{ flex-direction:column; align-items:stretch; }

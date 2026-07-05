@@ -13,8 +13,8 @@ const tagline = getTagline(locale);
 const t = {
   pitch:
     locale === "en"
-      ? "Premium websites, community systems, and automations with a focus on security, clarity, and performance. No hacks, spam, or unauthorized access."
-      : "Web premium, sistemas de comunidad y automatizaciones con enfoque en seguridad, claridad y performance.\n          No hacemos hacks, spam ni accesos no autorizados.",
+      ? "Premium websites, stores, bots, communities, branding, and automations for small businesses, creators, and digital communities."
+      : "Webs, tiendas, bots, comunidades, branding y automatizaciones con diseno premium, precios accesibles y entrega clara.",
   quote: locale === "en" ? "Get a quote on WhatsApp" : "Cotizar por WhatsApp",
   security: locale === "en" ? "Security & ethics" : "Seguridad y etica",
   services: locale === "en" ? "Services" : "Servicios",
@@ -24,7 +24,7 @@ const t = {
   web: locale === "en" ? "Web / UI-UX" : "Web / UI-UX",
   discord: "Discord",
   minecraft: "Minecraft",
-  waAi: locale === "en" ? "WhatsApp + AI" : "WhatsApp + IA",
+  waAi: locale === "en" ? "Automations" : "Automatizaciones",
   portfolio: locale === "en" ? "Portfolio" : "Portafolio",
   pricing: locale === "en" ? "Pricing" : "Precios",
   about: locale === "en" ? "About Vexora" : "Sobre Vexora",
@@ -67,7 +67,7 @@ const t = {
           <a class="colLink" href={routeFor("web", locale)}>{t.web}</a>
           <a class="colLink" href={routeFor("discord", locale)}>{t.discord}</a>
           <a class="colLink" href={routeFor("minecraft", locale)}>{t.minecraft}</a>
-          <a class="colLink" href={routeFor("whatsapp", locale)}>{t.waAi}</a>
+          <a class="colLink" href={routeFor("servicios", locale)}>{t.waAi}</a>
         </div>
         <div class="glass footer__col">
           <div class="colTitle">{t.explore}</div>

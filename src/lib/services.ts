@@ -1,13 +1,16 @@
 import type { Locale } from "@/lib/i18n";
 import type { PageKey } from "@/lib/whatsapp";
 
-export type ServiceCategoryId = "web" | "discord" | "minecraft" | "whatsapp" | "automations";
+export type ServiceCategoryId = "web" | "discord" | "minecraft" | "commerce" | "automations" | "branding";
 
 export type Service = {
   id: string;
   title: string;
   category: ServiceCategoryId;
   summary: string;
+  idealFor: string;
+  priceFromMXN: number;
+  estimatedTime: string;
   bullets: string[];
   hrefKey: PageKey;
 };
@@ -19,98 +22,112 @@ export function getServiceCategories(locale: Locale): Array<ServiceCategory | { 
   return [
     { id: "all", label: all },
     { id: "web", label: locale === "en" ? "Web / UI-UX" : "Web/UIUX" },
+    { id: "commerce", label: locale === "en" ? "Online stores" : "Tiendas" },
     { id: "discord", label: "Discord" },
     { id: "minecraft", label: "Minecraft" },
-    { id: "whatsapp", label: locale === "en" ? "WhatsApp + AI" : "WhatsApp+IA" },
-    { id: "automations", label: locale === "en" ? "Automations" : "Automatizaciones" }
+    { id: "automations", label: locale === "en" ? "Automations" : "Automatizaciones" },
+    { id: "branding", label: "Branding" }
   ];
 }
 
 const SERVICES_ES: Service[] = [
   {
-    id: "web-premium",
-    title: "Web premium (UI, performance y SEO)",
+    id: "landing-pages",
+    title: "Landing pages",
     category: "web",
-    summary: "Landing o multipagina ultra rapida con copy de conversion, accesibilidad y SEO tecnico.",
-    bullets: ["Core Web Vitals", "Componentes reutilizables", "SEO + OG + sitemap", "Animacion sutil y precisa"],
+    summary: "Paginas de una sola oferta para negocios, creadores, eventos, marcas personales y campanas.",
+    idealFor: "Lanzamientos y captacion",
+    priceFromMXN: 3499,
+    estimatedTime: "5-12 dias",
+    bullets: ["Hero premium", "Copy de conversion", "CTA visibles", "SEO basico"],
     hrefKey: "web"
   },
   {
-    id: "discord-systems",
-    title: "Discord systems (bots + moderacion)",
+    id: "web-completa",
+    title: "Paginas web completas",
+    category: "web",
+    summary: "Sitios multipagina con secciones profesionales, responsive, SEO basico y estructura escalable.",
+    idealFor: "Negocios y agencias",
+    priceFromMXN: 9999,
+    estimatedTime: "12-18 dias",
+    bullets: ["Inicio/servicios/contacto", "UI premium", "Arquitectura clara", "Performance"],
+    hrefKey: "web"
+  },
+  {
+    id: "tiendas-online",
+    title: "Tiendas online",
+    category: "commerce",
+    summary: "Catalogo, producto, carrito o flujo externo, WhatsApp o checkout segun el alcance.",
+    idealFor: "Productos digitales o fisicos",
+    priceFromMXN: 12999,
+    estimatedTime: "14-21 dias",
+    bullets: ["Catalogo", "Producto", "Flujo de compra", "Confianza para vender"],
+    hrefKey: "web"
+  },
+  {
+    id: "bots-discord",
+    title: "Bots de Discord",
     category: "discord",
-    summary: "Automod, antiraid, tickets, logs y experiencia de onboarding clara (sin caos).",
-    bullets: ["Permisos y roles", "Tickets + forms", "Anti-raid y rate-limits", "Logs auditables"],
+    summary: "Tickets, moderacion, embeds, roles, logs, automatizaciones y comandos para comunidades.",
+    idealFor: "Comunidades activas",
+    priceFromMXN: 1999,
+    estimatedTime: "3-12 dias",
+    bullets: ["Tickets", "Roles y permisos", "Logs", "Embeds personalizados"],
     hrefKey: "discord"
   },
   {
-    id: "minecraft-infra",
-    title: "Minecraft (infra + optimizacion)",
+    id: "servidores-minecraft",
+    title: "Servidores de Minecraft",
     category: "minecraft",
-    summary: "Setups estables: plugins, seguridad, backups, tuning y despliegues replicables.",
-    bullets: ["Optimizar TPS", "Hardening basico", "Backups + rollback", "Guia de operacion"],
+    summary: "Configuracion, plugins, rangos, economia, lobby, permisos y optimizacion basica.",
+    idealFor: "Comunidades y networks",
+    priceFromMXN: 2499,
+    estimatedTime: "4-14 dias",
+    bullets: ["Plugins esenciales", "Permisos", "Rangos", "Optimizacion TPS"],
     hrefKey: "minecraft"
   },
   {
-    id: "whatsapp-ia",
-    title: "WhatsApp + IA (flujos permitidos)",
-    category: "whatsapp",
-    summary: "Atencion y ventas con integraciones oficiales (WhatsApp Business API) y automatizaciones medibles.",
-    bullets: ["Ruteo de conversaciones", "Etiquetas + CRM", "Respuestas asistidas por IA", "Metricas y QA"],
-    hrefKey: "whatsapp"
+    id: "automatizaciones",
+    title: "Automatizaciones",
+    category: "automations",
+    summary: "Formularios, Discord, WhatsApp, correos, bases de datos y flujos internos conectados.",
+    idealFor: "Equipos que pierden tiempo manual",
+    priceFromMXN: 14999,
+    estimatedTime: "2-4 semanas",
+    bullets: ["Flujos validados", "Notificaciones", "Integraciones", "Documentacion"],
+    hrefKey: "servicios"
   },
   {
-    id: "automation-stack",
-    title: "Automatizaciones (operacion y soporte)",
-    category: "automations",
-    summary: "Conectamos herramientas para reducir friccion: formularios, CRMs, alertas, reportes y handoff humano.",
-    bullets: ["Flujos con validacion", "Alertas y dashboards", "Auditoria basica", "Documentacion"],
+    id: "uiux-rediseno",
+    title: "UI/UX y redisenos",
+    category: "web",
+    summary: "Mejora visual, estructura, experiencia movil y conversion de una web existente.",
+    idealFor: "Webs que ya existen",
+    priceFromMXN: 4999,
+    estimatedTime: "6-10 dias",
+    bullets: ["Auditoria visual", "Jerarquia", "Mobile-first", "Mejor copy"],
+    hrefKey: "web"
+  },
+  {
+    id: "branding-digital",
+    title: "Branding digital basico",
+    category: "branding",
+    summary: "Identidad visual ligera: paleta, tipografias, estilo, banners y presentacion online.",
+    idealFor: "Marcas nuevas",
+    priceFromMXN: 1499,
+    estimatedTime: "2-4 dias",
+    bullets: ["Paleta", "Tipografia", "Mini guia", "Recomendaciones de uso"],
     hrefKey: "servicios"
   }
 ];
 
-const SERVICES_EN: Service[] = [
-  {
-    id: "web-premium",
-    title: "Premium website (UI, performance & SEO)",
-    category: "web",
-    summary: "Landing or multi-page site built for speed, conversion copy, accessibility, and technical SEO.",
-    bullets: ["Core Web Vitals", "Reusable components", "SEO + OG + sitemap", "Subtle, precise motion"],
-    hrefKey: "web"
-  },
-  {
-    id: "discord-systems",
-    title: "Discord systems (bots + moderation)",
-    category: "discord",
-    summary: "Automod, anti-raid, tickets, logs, and clean onboarding (no chaos).",
-    bullets: ["Roles & permissions", "Tickets + forms", "Anti-raid + rate limits", "Auditable logs"],
-    hrefKey: "discord"
-  },
-  {
-    id: "minecraft-infra",
-    title: "Minecraft (infra + optimization)",
-    category: "minecraft",
-    summary: "Stable setups: plugins, security basics, backups, tuning, and reproducible deployments.",
-    bullets: ["TPS optimization", "Basic hardening", "Backups + rollback", "Operations guide"],
-    hrefKey: "minecraft"
-  },
-  {
-    id: "whatsapp-ia",
-    title: "WhatsApp + AI (compliant flows)",
-    category: "whatsapp",
-    summary: "Sales/support flows with official integrations (WhatsApp Business API) and measurable automation.",
-    bullets: ["Conversation routing", "Tags + CRM", "AI-assisted replies", "Metrics + QA"],
-    hrefKey: "whatsapp"
-  },
-  {
-    id: "automation-stack",
-    title: "Automations (ops + support)",
-    category: "automations",
-    summary: "We connect tools to reduce friction: forms, CRMs, alerts, reports, and human handoff.",
-    bullets: ["Validated flows", "Alerts + dashboards", "Basic audit trail", "Documentation"],
-    hrefKey: "servicios"
-  }
-];
+const SERVICES_EN: Service[] = SERVICES_ES.map((service) => ({
+  ...service,
+  summary: "Premium, practical digital service with clear scope, responsive delivery, and lightweight QA.",
+  idealFor: "Small businesses, creators, and communities",
+  estimatedTime: service.estimatedTime.replace("dias", "days").replace("semanas", "weeks"),
+  bullets: ["Clear scope", "Responsive UX", "Documented handoff", "Conversion focus"]
+}));
 
 export function getServices(locale: Locale) {
   return locale === "en" ? SERVICES_EN : SERVICES_ES;

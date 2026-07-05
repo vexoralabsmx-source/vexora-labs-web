@@ -1,326 +1,828 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { BRAND, TAGLINE } from "@/lib/constants";
+import FAQAccordion from "@/components/FAQAccordion.astro";
+import { BRAND } from "@/lib/constants";
 import { getWhatsAppLink } from "@/lib/whatsapp";
+import { getServices } from "@/lib/services";
+import { getFeaturedPricing, PRICING_NOTE } from "@/lib/pricing";
+import { CASE_STUDIES } from "@/lib/caseStudies";
+import { formatMoneyFromMXN } from "@/lib/currency";
+
+const services = getServices("es");
+const featuredPricing = getFeaturedPricing("es", 4);
+const projects = CASE_STUDIES;
+const waHome = getWhatsAppLink("home");
+const faqItems = [
+  {
+    q: "Cuanto tarda una web?",
+    a: "Una landing starter suele tardar 5 a 8 dias habiles. Una landing premium puede tomar 8 a 12 dias y una web multipagina normalmente va de 12 a 18 dias, segun contenido e integraciones."
+  },
+  {
+    q: "Puedo pedir cambios?",
+    a: "Si. Definimos rondas de revision desde el inicio para ajustar estructura, copy y detalles visuales sin perder orden."
+  },
+  {
+    q: "Los precios son fijos?",
+    a: "Son precios desde. El monto final depende del alcance, urgencia, numero de pantallas, funciones, integraciones y nivel de personalizacion."
+  },
+  {
+    q: "Trabajan con negocios pequenos?",
+    a: "Si. Vexora Labs esta pensado para emprendedores, negocios pequenos, creadores y comunidades que quieren verse profesionales sin presupuestos enormes."
+  },
+  {
+    q: "Hacen bots de Discord personalizados?",
+    a: "Si. Podemos crear tickets, logs, embeds, roles, comandos, moderacion y automatizaciones segun el flujo de tu comunidad."
+  },
+  {
+    q: "Configuran servidores de Minecraft?",
+    a: "Si. Configuramos plugins, rangos, permisos, economia, lobby simple, backups y optimizacion basica segun el tipo de servidor."
+  },
+  {
+    q: "Pueden mejorar una web que ya tengo?",
+    a: "Si. Hacemos auditoria visual, redisenamos secciones, mejoramos mobile, jerarquia, copy, CTA y estructura de conversion."
+  },
+  {
+    q: "Puedo pagar por partes?",
+    a: "En muchos proyectos si. Normalmente trabajamos con anticipo y liquidacion contra entrega o por hitos, segun el alcance."
+  },
+  {
+    q: "Incluye dominio y hosting?",
+    a: "No por defecto. Podemos ayudarte a elegirlos y configurarlos; los costos de proveedor se cotizan aparte."
+  },
+  {
+    q: "Dan soporte despues de entregar?",
+    a: "Si. Puedes contratar soporte mensual opcional para mantenimiento, ajustes menores, monitoreo basico y prioridad de respuesta."
+  }
+];
+const heroStats = [
+  { k: "Desde", v: "$1,499 MXN", d: "paquetes de entrada" },
+  { k: "Hasta", v: "$20,000+ MXN", d: "proyectos elite" },
+  { k: "Entrega", v: "5 dias+", d: "segun alcance" }
+];
+const impactCards = [
+  {
+    title: "Se entiende rapido que vendes",
+    text: "Jerarquia, copy y CTAs para que el visitante no tenga que adivinar tu oferta."
+  },
+  {
+    title: "Tu marca deja de parecer improvisada",
+    text: "UI premium, consistencia visual y secciones de confianza desde el primer scroll."
+  },
+  {
+    title: "Cotizar se vuelve facil",
+    text: "Precios desde, paquetes claros y caminos directos a WhatsApp o brief."
+  },
+  {
+    title: "Puedes crecer por etapas",
+    text: "Empezamos con lo esencial y dejamos estructura para web, bot, tienda o automatizacion."
+  }
+];
+const budgetLanes = [
+  { name: "Starter", price: "$1,499-$3,499", text: "Branding, bot basico, Minecraft basico o landing starter." },
+  { name: "Pro", price: "$4,999-$6,999", text: "Rediseno, bot pro o landing premium con mejor storytelling." },
+  { name: "Premium", price: "$9,999-$14,999", text: "Web multipagina, tienda basica o automatizacion profesional." },
+  { name: "Elite", price: "$17,999-$20,000+", text: "Web + bot + automatizacion o proyecto digital completo." }
+];
+const serviceIconMap: Record<string, string> = {
+  web: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16v11H4z"/><path d="M4 10h16"/><path d="M8 14h4"/><path d="M15 14h2"/></svg>',
+  commerce: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h15l-2 8H8z"/><path d="M6 8 5.4 5H3"/><path d="M9 20h.01"/><path d="M18 20h.01"/></svg>',
+  discord: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8.5c3.2-1.4 6.8-1.4 10 0l1 7c-2.7 2-9.3 2-12 0z"/><path d="M9 13h.01"/><path d="M15 13h.01"/><path d="M9.5 16c1.6.7 3.4.7 5 0"/></svg>',
+  minecraft: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5z"/><path d="M5 10h14"/><path d="M10 5v14"/><path d="M14 10v9"/></svg>',
+  automations: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4H7z"/><path d="M13 13h4v4h-4z"/><path d="M11 9h3a3 3 0 0 1 3 3v1"/><path d="M13 15h-3a3 3 0 0 1-3-3v-1"/></svg>',
+  branding: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 4 8l8 4 8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 16l8 4 8-4"/></svg>'
+};
 ---
 <BaseLayout
   page="home"
-  title={`${BRAND} — ${TAGLINE}`}
-  description="Agencia/lab de soluciones digitales premium: web rapida, sistemas de Discord, infraestructura Minecraft, automatizaciones y WhatsApp + IA (integraciones permitidas)."
+  title={`${BRAND} | Webs, bots y soluciones digitales premium`}
+  description="Creamos paginas web, tiendas online, bots de Discord, servidores de Minecraft y automatizaciones con diseno premium, precios accesibles y enfoque en resultados."
   canonicalPath="/"
 >
-  <section class="section hero">
+  <section class="section hero" id="inicio">
     <div class="container hero__grid">
-      <div class="hero__left">
+      <div class="hero__copy">
         <div class="pill" data-reveal>
           <span class="pillDot" aria-hidden="true"></span>
-          <span>Diseño Apple-level · Precisión SpaceX · Entregables auditables</span>
+          <span>Agencia digital premium para negocios, creadores y comunidades</span>
         </div>
-
         <h1 class="h1 hero__title" data-reveal>
-          Infraestructura digital para crecer sin friccion.
+          Creamos webs, bots y sistemas digitales que hacen ver premium a tu marca
         </h1>
         <p class="hero__lead muted" data-reveal>
-          Vexora Labs construye webs premium, sistemas de comunidad y automatizaciones medibles.
-          Menos caos. Mas control. Mejor performance.
+          En Vexora Labs disenamos paginas web, tiendas online, bots de Discord, servidores de Minecraft y automatizaciones con una estetica moderna, rapida y lista para vender.
         </p>
-
         <div class="hero__cta" data-reveal>
-          <a class="btn btn-primary" href={getWhatsAppLink("home")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
-          <a class="btn" href="/servicios/">Ver servicios</a>
-          <a class="btn" href="/portafolio/">Ver resultados</a>
+          <a class="btn btn-primary" href={waHome} target="_blank" rel="noreferrer">Cotizar mi proyecto</a>
+          <a class="btn" href="#servicios">Ver servicios</a>
+          <a class="btn" href="#precios">Ver precios</a>
         </div>
-
-        <div class="hero__proof glass" data-reveal>
-          <div class="kpi">
-            <div class="kpi__num">+Performance</div>
-            <div class="muted small">Core Web Vitals como baseline, no como extra.</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi__num">+Seguridad</div>
-            <div class="muted small">Hardening basico, roles/permisos y procesos.</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi__num">+Claridad</div>
-            <div class="muted small">Entregables, checklist, runbooks y handoff.</div>
-          </div>
+        <div class="badgeRow" data-reveal>
+          {["Webs modernas", "Bots de Discord", "Automatizaciones", "UI/UX premium", "Precios accesibles"].map((badge) => (
+            <span>{badge}</span>
+          ))}
+        </div>
+        <div class="heroStats" data-reveal>
+          {heroStats.map((stat) => (
+            <div class="heroStat">
+              <span>{stat.k}</span>
+              <strong>{stat.v}</strong>
+              <small>{stat.d}</small>
+            </div>
+          ))}
         </div>
       </div>
 
-      <aside class="hero__right glass card" data-reveal>
-        <div class="hero__panelTitle">Lo que hacemos</div>
-        <div class="hero__panelGrid">
-          <a class="tile" href="/web-uiux/">
-            <div class="tile__title">Web / UI-UX</div>
-            <div class="tile__meta muted">Landing y multipagina premium</div>
-          </a>
-          <a class="tile" href="/discord/">
-            <div class="tile__title">Discord</div>
-            <div class="tile__meta muted">Bots, automod, antiraid, tickets</div>
-          </a>
-          <a class="tile" href="/minecraft/">
-            <div class="tile__title">Minecraft</div>
-            <div class="tile__meta muted">Setup, plugins, optimizacion, seguridad</div>
-          </a>
-          <a class="tile" href="/whatsapp-ia/">
-            <div class="tile__title">WhatsApp + IA</div>
-            <div class="tile__meta muted">Integraciones oficiales y flujos</div>
-          </a>
+      <aside class="heroPanel glass" aria-label="Vista rapida de Vexora Labs" data-reveal>
+        <div class="heroPanel__top">
+          <div>
+            <div class="heroPanel__eyebrow">Launch console</div>
+            <div class="heroPanel__title">Tu proyecto se ve premium antes de vender.</div>
+          </div>
+          <div class="statusPill">Cotizable</div>
         </div>
-        <div class="hero__panelNote muted">
-          Nada de hacks, spam o accesos no autorizados. Construimos sistemas confiables.
+        <div class="console">
+          <div class="console__header">
+            <span>Vexora build plan</span>
+            <strong>Premium / Accesible</strong>
+          </div>
+          <div class="console__screen">
+            <div class="console__row is-on">
+              <span>Oferta clara</span>
+              <strong>Lista</strong>
+            </div>
+            <div class="console__row is-on">
+              <span>UI responsive</span>
+              <strong>Mobile-first</strong>
+            </div>
+            <div class="console__row">
+              <span>CTA y precios</span>
+              <strong>Visibles</strong>
+            </div>
+            <div class="console__row">
+              <span>Entrega</span>
+              <strong>Por alcance</strong>
+            </div>
+          </div>
+          <div class="console__rail">
+            {services.slice(0, 4).map((service) => (
+              <a href="#servicios">
+                <span>{service.title}</span>
+                <strong>{formatMoneyFromMXN(service.priceFromMXN, "MXN")}</strong>
+              </a>
+            ))}
+          </div>
+        </div>
+        <div class="heroPanel__note">
+          Diseno profesional sin presupuestos enormes. Alcance claro, entregables reales y soporte directo por WhatsApp o Discord.
         </div>
       </aside>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container split">
-      <div class="glass card" data-reveal>
-        <h2 class="h2">Como trabajamos</h2>
-        <p class="muted" style="margin:10px 0 0;">
-          Un proceso corto, medible y sin misticismo. Si no se puede operar, no se entrega.
-        </p>
-        <ol class="steps">
-          <li>
-            <span class="steps__n">1</span>
-            <div>
-              <div class="steps__t">Diagnostico y alcance</div>
-              <div class="muted">Objetivo, restricciones, riesgos y definicion de entregables.</div>
-            </div>
-          </li>
-          <li>
-            <span class="steps__n">2</span>
-            <div>
-              <div class="steps__t">Diseño y arquitectura</div>
-              <div class="muted">Sistema visual, flows, permisos y estructura de contenido.</div>
-            </div>
-          </li>
-          <li>
-            <span class="steps__n">3</span>
-            <div>
-              <div class="steps__t">Build + QA</div>
-              <div class="muted">Performance, accesibilidad, seguridad basica y pruebas reales.</div>
-            </div>
-          </li>
-          <li>
-            <span class="steps__n">4</span>
-            <div>
-              <div class="steps__t">Entrega y soporte</div>
-              <div class="muted">Checklist, documentacion, handoff y plan de mantenimiento.</div>
-            </div>
-          </li>
-        </ol>
+  <section class="section story">
+    <div class="container story__grid">
+      <div class="story__headline" data-reveal>
+        <div class="pill">Tu idea no necesita verse barata para empezar</div>
+        <h2 class="h2">Convertimos ideas buenas en experiencias digitales modernas, claras y funcionales.</h2>
       </div>
-
-      <div class="glass card" data-reveal>
-        <h2 class="h2">Que entregamos</h2>
-        <ul class="deliver">
-          <li><strong>Artefactos operables:</strong> checklist, runbooks, configuraciones y guias.</li>
-          <li><strong>UX clara:</strong> jerarquia, copy, accesibilidad y micro-interacciones.</li>
-          <li><strong>Performance:</strong> carga rapida, imagenes optimizadas y codigo limpio.</li>
-          <li><strong>Seguridad y etica:</strong> practicas permitidas; nada de abuso o acceso no autorizado.</li>
-          <li><strong>Medicion:</strong> eventos clave y metricas para iterar sin adivinar.</li>
-        </ul>
-        <div class="ctaBox">
-          <div>
-            <div class="ctaBox__t">Listo para cotizar</div>
-            <div class="muted small">Dinos objetivo + fecha + presupuesto aproximado.</div>
-          </div>
-          <a class="btn btn-primary" href={getWhatsAppLink("home")} target="_blank" rel="noreferrer">Escribir por WhatsApp</a>
-        </div>
+      <div class="storyCards">
+        <article class="storyCard glass" data-reveal>
+          <span>01</span>
+          <h3>El problema</h3>
+          <p class="muted">Muchos negocios, creadores y comunidades tienen una idea fuerte, pero su web, servidor o sistema se ve improvisado, lento o poco confiable.</p>
+        </article>
+        <article class="storyCard glass" data-reveal>
+          <span>02</span>
+          <h3>La solucion</h3>
+          <p class="muted">Vexora Labs estructura, disena y desarrolla soluciones digitales con estetica premium, copy claro y funcionamiento real.</p>
+        </article>
+        <article class="storyCard glass" data-reveal>
+          <span>03</span>
+          <h3>El resultado</h3>
+          <p class="muted">Una marca mas profesional, confiable, mejor presentada y lista para vender, organizar o crecer.</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container glass card" data-reveal>
-      <div class="sectionHead">
+  <section class="section impact">
+    <div class="container">
+      <div class="impactBand glass" data-reveal>
         <div>
-          <h2 class="h2">Resultados (casos reales sin marcas inventadas)</h2>
-          <p class="muted" style="margin:10px 0 0;">
-            Trabajamos con negocios y comunidades. Mostramos el tipo de impacto y el enfoque, no nombres.
-          </p>
+          <div class="pill">Lo que mejora</div>
+          <h2 class="h2">Tu presencia digital empieza a trabajar a favor de tu marca.</h2>
         </div>
-        <a class="btn" href="/portafolio/">Ver portafolio completo</a>
+        <div class="impactGrid">
+          {impactCards.map((card) => (
+            <article class="impactCard">
+              <h3>{card.title}</h3>
+              <p class="muted">{card.text}</p>
+            </article>
+          ))}
+        </div>
       </div>
+    </div>
+  </section>
 
-      <div class="cases">
-        <article class="case" data-reveal>
-          <div class="case__k">Cliente: eCommerce local</div>
-          <div class="case__t">WhatsApp + IA + automatizaciones</div>
-          <div class="case__m muted">-41% primera respuesta · +18% conversion asistida · 0 spam</div>
-        </article>
-        <article class="case" data-reveal>
-          <div class="case__k">Cliente: servidor de comunidad</div>
-          <div class="case__t">Discord antiraid + tickets + logs</div>
-          <div class="case__m muted">-92% spam visible · +35% resolucion 1er contacto</div>
-        </article>
-        <article class="case" data-reveal>
-          <div class="case__k">Cliente: servidor de Minecraft</div>
-          <div class="case__t">Performance + seguridad + runbook</div>
-          <div class="case__m muted">TPS mas estable · backups verificados · deploy con checklist</div>
-        </article>
+  <section class="section" id="servicios">
+    <div class="container">
+      <div class="sectionHead" data-reveal>
+        <div>
+          <div class="pill">Servicios principales</div>
+          <h2 class="h2">Webs, bots y sistemas pensados para vender, organizar y crecer.</h2>
+        </div>
+        <a class="btn" href="/servicios/">Ver todos los servicios</a>
+      </div>
+      <div class="serviceGrid">
+        {services.map((service) => (
+          <article class="serviceCard glass" data-reveal>
+            <div class="serviceCard__top">
+              <div class={`serviceIcon serviceIcon--${service.category}`} aria-hidden="true" set:html={serviceIconMap[service.category]}></div>
+              <div class="servicePrice">Desde {formatMoneyFromMXN(service.priceFromMXN, "MXN")}</div>
+            </div>
+            <h3>{service.title}</h3>
+            <p class="muted">{service.summary}</p>
+            <ul>
+              {service.bullets.map((item) => <li>{item}</li>)}
+            </ul>
+            <div class="serviceCard__foot">
+              <span>{service.estimatedTime}</span>
+              <a href={waHome} target="_blank" rel="noreferrer">Cotizar</a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="precios">
+    <div class="container">
+      <div class="sectionHead" data-reveal>
+        <div>
+          <div class="pill">Precios claros</div>
+          <h2 class="h2">Precios accesibles para empezar profesional.</h2>
+          <p class="muted sectionLead">{PRICING_NOTE}</p>
+        </div>
+        <a class="btn btn-primary" href="/precios/">Ver paquetes completos</a>
+      </div>
+      <div class="pricingGrid">
+        {featuredPricing.map((tier) => (
+          <article class="priceCard glass" data-reveal>
+            <div class="priceCard__badge">{tier.badge}</div>
+            <h3>{tier.name}</h3>
+            <div class="priceCard__price">
+              Desde {formatMoneyFromMXN(tier.priceOneTimeMXN, "MXN")}{tier.priceOneTimeSuffix ?? ""}
+            </div>
+            <p class="muted">{tier.description}</p>
+            <ul>
+              {tier.includes.slice(0, 5).map((item) => <li>{item}</li>)}
+            </ul>
+            <div class="priceCard__actions">
+              <a class="btn btn-primary" href={waHome} target="_blank" rel="noreferrer" data-choose-package={tier.id}>Cotizar este paquete</a>
+              <a class="btn" href="/precios/">Ver que incluye</a>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   </section>
 
   <section class="section">
-    <div class="container glass card finalCta" data-reveal>
+    <div class="container">
+      <div class="budgetBand glass" data-reveal>
+        <div class="budgetBand__copy">
+          <div class="pill">Rutas por presupuesto</div>
+          <h2 class="h2">Empieza pequeno, pero no te veas pequeno.</h2>
+          <p class="muted">La estrategia es simple: arrancar con una base profesional y escalar cuando el proyecto ya necesita mas pantallas, integraciones o automatizacion.</p>
+        </div>
+        <div class="budgetGrid">
+          {budgetLanes.map((lane) => (
+            <article class="budgetCard">
+              <span>{lane.name}</span>
+              <strong>{lane.price}</strong>
+              <p>{lane.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container glass card serviceTableWrap" data-reveal>
+      <div class="sectionHead sectionHead--compact">
+        <div>
+          <h2 class="h2">Todos los servicios con precio desde</h2>
+          <p class="muted sectionLead">Una guia rapida para comparar servicio, ideal, tiempo y alcance inicial.</p>
+        </div>
+        <a class="btn" href={waHome} target="_blank" rel="noreferrer">Pedir recomendacion</a>
+      </div>
+      <div class="tableScroll" role="region" aria-label="Tabla de servicios y precios" tabindex="0">
+        <table class="serviceTable">
+          <thead>
+            <tr>
+              <th scope="col">Servicio</th>
+              <th scope="col">Ideal para</th>
+              <th scope="col">Precio desde</th>
+              <th scope="col">Tiempo estimado</th>
+              <th scope="col">Que incluye</th>
+              <th scope="col">CTA</th>
+            </tr>
+          </thead>
+          <tbody>
+            {services.map((service) => (
+              <tr>
+                <th scope="row">{service.title}</th>
+                <td>{service.idealFor}</td>
+                <td>{formatMoneyFromMXN(service.priceFromMXN, "MXN")}</td>
+                <td>{service.estimatedTime}</td>
+                <td>{service.bullets.slice(0, 3).join(" · ")}</td>
+                <td><a href={waHome} target="_blank" rel="noreferrer">Cotizar</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="proceso">
+    <div class="container">
+      <div class="sectionHead" data-reveal>
+        <div>
+          <div class="pill">Como trabajamos</div>
+          <h2 class="h2">Proceso claro, visual y sin vueltas.</h2>
+        </div>
+      </div>
+      <div class="processGrid">
+        {["Nos cuentas tu idea", "Definimos que necesitas", "Disenamos la estructura", "Desarrollamos la solucion", "Revisamos contigo", "Publicamos o entregamos"].map((step, index) => (
+          <article class="processCard glass" data-reveal>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <h3>{step}</h3>
+            <p class="muted">Cada etapa deja decisiones claras, entregables visibles y una siguiente accion concreta.</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container trust glass card" data-reveal>
       <div>
-        <h2 class="h2">Construyamos un sistema que se sienta caro.</h2>
-        <p class="muted" style="margin:10px 0 0;">
-          Si tu web o comunidad se siente friccionada, eso cuesta dinero. Diseñemos la solucion con precision.
-        </p>
+        <div class="pill">Confianza</div>
+        <h2 class="h2">Premium por ejecucion, no por promesas vacias.</h2>
+      </div>
+      <div class="trustGrid">
+        {["Precios claros", "Soporte directo", "Diseno responsive", "Entrega organizada", "Codigo limpio", "Enfoque en conversion", "Soluciones personalizadas", "Comunicacion por WhatsApp/Discord"].map((item) => (
+          <div class="trustItem">{item}</div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="proyectos">
+    <div class="container">
+      <div class="sectionHead" data-reveal>
+        <div>
+          <div class="pill">Proyectos</div>
+          <h2 class="h2">Ejemplos de soluciones que podemos construir.</h2>
+        </div>
+        <a class="btn" href="/portafolio/">Ver portafolio</a>
+      </div>
+      <div class="projectsGrid">
+        {projects.map((project) => (
+          <article class="projectCard glass" data-reveal>
+            <div class="projectCard__type">{project.type}</div>
+            <h3>{project.title}</h3>
+            <p class="muted">{project.solution}</p>
+            <div class="tags">
+              {project.stack.slice(0, 4).map((tag) => <span>{tag}</span>)}
+            </div>
+            <div class="projectResult">{project.metrics[0]}</div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="sectionHead" data-reveal>
+        <div>
+          <div class="pill">FAQ</div>
+          <h2 class="h2">Preguntas frecuentes antes de cotizar.</h2>
+        </div>
+      </div>
+      <FAQAccordion items={faqItems} />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container finalCta glass" data-reveal>
+      <div>
+        <h2 class="h2">Tu proyecto puede verse premium desde el primer dia</h2>
+        <p class="muted">Cuentanos tu idea y te ayudamos a convertirla en una web, bot, tienda o sistema funcional con diseno profesional y precio accesible.</p>
       </div>
       <div class="finalCta__actions">
-        <a class="btn btn-primary" href={getWhatsAppLink("home")} target="_blank" rel="noreferrer">Cotizar por WhatsApp</a>
-        <a class="btn" href="/contacto/">Enviar brief</a>
+        <a class="btn btn-primary" href={waHome} target="_blank" rel="noreferrer">Cotizar ahora</a>
+        <a class="btn" href="#precios">Ver precios</a>
       </div>
     </div>
   </section>
 
   <style>
-    .hero{ padding-top: 52px; }
+    .hero{ padding-top: 50px; }
     .hero__grid{
       display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap:18px;
-      align-items:start;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+      gap:22px;
+      align-items:center;
     }
-    .hero__title{ margin-top: 16px; }
-    .hero__lead{ font-size: 18px; line-height:1.6; max-width: 62ch; }
-    .hero__cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 18px; }
-
-    .hero__proof{
-      margin-top: 22px;
-      padding: 14px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:10px;
+    .hero__title{ margin-top:18px; max-width: 12ch; }
+    .hero__lead{
+      max-width: 68ch;
+      font-size:18px;
+      line-height:1.65;
+      margin:18px 0 0;
     }
-    .kpi{ padding: 12px; border-radius: 16px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); }
-    .kpi__num{ font-family: var(--font-display); font-weight:700; letter-spacing:-.02em; }
-    .small{ font-size: 13px; }
-
-    .hero__panelTitle{
-      font-family: var(--font-display);
-      font-weight:700;
-      letter-spacing:-.02em;
-      margin-bottom: 12px;
-    }
-    .hero__panelGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    .tile{
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      padding: 14px;
-      transition: transform .18s ease, border-color .18s ease, background .18s ease;
-    }
-    .tile:hover{
-      transform: translateY(-2px);
-      border-color: rgba(255,255,255,.18);
-      background: rgba(255,255,255,.05);
-    }
-    .tile__title{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
-    .tile__meta{ font-size: 13px; margin-top: 6px; }
-    .hero__panelNote{ margin-top: 14px; font-size: 13px; }
-
-    .steps{
-      margin: 18px 0 0;
-      padding:0;
-      list-style:none;
-      display:grid;
-      gap:12px;
-    }
-    .steps li{
-      display:grid;
-      grid-template-columns: 34px 1fr;
-      gap:12px;
-      padding: 12px;
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-    }
-    .steps__n{
-      width:34px; height:34px;
-      border-radius: 14px;
-      display:grid; place-items:center;
+    .hero__cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }
+    .badgeRow{ display:flex; gap:9px; flex-wrap:wrap; margin-top:18px; }
+    .badgeRow span,
+    .statusPill,
+    .servicePrice,
+    .priceCard__badge,
+    .projectCard__type{
       border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, rgba(139,92,255,.18), rgba(255,255,255,.03));
-      font-family: var(--font-display);
-      font-weight:700;
+      background:rgba(255,255,255,.045);
+      border-radius:999px;
+      color:rgba(237,237,243,.84);
+      font-size:13px;
+      padding:8px 10px;
     }
-    .steps__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
-
-    .deliver{
-      margin: 14px 0 0;
-      padding-left: 18px;
-      color: rgba(237,237,243,.84);
+    .heroStats{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+      margin-top:18px;
+      max-width:680px;
     }
-    .deliver li{ margin: 10px 0; }
-
-    .ctaBox{
-      margin-top: 18px;
-      padding: 14px;
-      border-radius: 18px;
+    .heroStat{
+      padding:14px;
+      border-radius:18px;
       border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
+      background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+    }
+    .heroStat span,
+    .heroStat small{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .heroStat strong{
+      display:block;
+      margin:4px 0;
+      font-family:var(--font-display);
+      font-size:20px;
+      letter-spacing:-.02em;
+    }
+    .pillDot{
+      width:8px;
+      height:8px;
+      border-radius:99px;
+      background:linear-gradient(180deg, #00E5FF, #8B5CF6);
+      box-shadow:0 0 24px rgba(0,229,255,.34);
+      display:inline-block;
+    }
+    .heroPanel{ padding:20px; position:relative; overflow:hidden; }
+    .heroPanel::before{
+      content:"";
+      position:absolute;
+      inset:-30% -20% auto auto;
+      width:220px;
+      height:220px;
+      background:radial-gradient(circle, rgba(0,229,255,.20), transparent 62%);
+      pointer-events:none;
+    }
+    .heroPanel__top{ display:flex; justify-content:space-between; gap:16px; align-items:flex-start; position:relative; }
+    .heroPanel__eyebrow{ color:var(--faint); font-size:13px; }
+    .heroPanel__title{ font-family:var(--font-display); font-size:24px; line-height:1.1; font-weight:700; letter-spacing:-.02em; margin-top:6px; }
+    .console{
+      position:relative;
+      margin-top:18px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        linear-gradient(180deg, rgba(3,7,18,.76), rgba(3,7,18,.42)),
+        radial-gradient(circle at 20% 10%, rgba(0,229,255,.14), transparent 32%);
+      overflow:hidden;
+    }
+    .console__header{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      flex-wrap:wrap;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      color:rgba(237,237,243,.82);
+      font-size:13px;
     }
-    .ctaBox__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; }
+    .console__header strong{ color:#fff; font-family:var(--font-display); }
+    .console__screen{ padding:12px; display:grid; gap:10px; }
+    .console__row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.035);
+    }
+    .console__row span{ color:var(--muted); }
+    .console__row strong{ font-family:var(--font-display); font-size:14px; }
+    .console__row.is-on{
+      border-color:rgba(34,197,94,.22);
+      background:linear-gradient(180deg, rgba(34,197,94,.10), rgba(255,255,255,.03));
+    }
+    .console__rail{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:1px;
+      border-top:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.08);
+    }
+    .console__rail a{
+      padding:13px;
+      background:rgba(3,7,18,.72);
+      display:grid;
+      gap:5px;
+    }
+    .console__rail span{ color:var(--muted); font-size:12px; line-height:1.25; }
+    .console__rail strong{ font-family:var(--font-display); font-size:14px; }
+    .heroPanel__note{ margin-top:16px; color:var(--muted); font-size:14px; line-height:1.55; position:relative; }
 
     .sectionHead{
       display:flex;
-      align-items:flex-end;
       justify-content:space-between;
-      gap:14px;
-      margin-bottom: 14px;
+      align-items:flex-end;
+      gap:16px;
+      margin-bottom:22px;
       flex-wrap:wrap;
     }
-    .cases{
+    .sectionHead .h2{ margin-top:14px; max-width: 760px; }
+    .sectionHead--compact{ margin-bottom:16px; }
+    .sectionLead{ margin:12px 0 0; max-width:78ch; line-height:1.6; }
+
+    .story__grid{ display:grid; grid-template-columns:.72fr 1.28fr; gap:18px; align-items:start; }
+    .story__headline .h2{ margin-top:16px; }
+    .storyCards{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+    .storyCard{ padding:18px; }
+    .storyCard span,
+    .processCard span{
+      color:#00E5FF;
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size:13px;
+    }
+    .storyCard h3,
+    .serviceCard h3,
+    .priceCard h3,
+    .processCard h3,
+    .projectCard h3{
+      font-family:var(--font-display);
+      letter-spacing:-.02em;
+      margin:10px 0 8px;
+    }
+    .storyCard p,
+    .impactCard p,
+    .serviceCard p,
+    .priceCard p,
+    .projectCard p{ line-height:1.58; }
+
+    .impact{ padding-top:0; }
+    .impactBand,
+    .budgetBand{
+      padding:24px;
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns:.75fr 1.25fr;
+      gap:18px;
+      align-items:start;
+    }
+    .impactBand .h2,
+    .budgetBand .h2{ margin-top:14px; }
+    .impactGrid,
+    .budgetGrid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
       gap:12px;
     }
-    .case{
-      border-radius: 20px;
+    .impactCard,
+    .budgetCard{
+      padding:16px;
+      border-radius:18px;
       border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      padding: 16px;
+      background:rgba(255,255,255,.035);
     }
-    .case__k{ font-size: 12px; color: rgba(237,237,243,.72); }
-    .case__t{ font-family: var(--font-display); font-weight:650; letter-spacing:-.02em; margin-top: 6px; }
-    .case__m{ margin-top: 10px; font-size: 13px; }
+    .impactCard h3,
+    .budgetCard span{
+      display:block;
+      font-family:var(--font-display);
+      font-weight:700;
+      letter-spacing:-.02em;
+      margin:0 0 8px;
+    }
+    .budgetBand__copy p{ margin:12px 0 0; line-height:1.6; }
+    .budgetCard strong{
+      display:block;
+      font-family:var(--font-display);
+      font-size:23px;
+      letter-spacing:-.02em;
+      margin-bottom:8px;
+      color:#00E5FF;
+    }
+    .budgetCard p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.5;
+      font-size:14px;
+    }
 
-    .finalCta{
+    .serviceGrid,
+    .pricingGrid,
+    .projectsGrid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:12px;
+    }
+    .serviceCard,
+    .priceCard,
+    .projectCard,
+    .processCard{
+      padding:18px;
+      transition:transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .serviceCard:hover,
+    .priceCard:hover,
+    .projectCard:hover,
+    .processCard:hover{
+      transform:translateY(-2px);
+      border-color:rgba(0,229,255,.20);
+      background:linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+    }
+    .serviceCard__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .serviceIcon{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(37,99,235,.22), rgba(139,92,246,.12));
+      color:#fff;
+    }
+    .serviceIcon :global(svg){
+      width:22px;
+      height:22px;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .serviceIcon--commerce{ background:linear-gradient(180deg, rgba(34,197,94,.20), rgba(37,99,235,.10)); }
+    .serviceIcon--discord{ background:linear-gradient(180deg, rgba(139,92,246,.24), rgba(0,229,255,.10)); }
+    .serviceIcon--minecraft{ background:linear-gradient(180deg, rgba(34,197,94,.18), rgba(255,255,255,.04)); }
+    .serviceIcon--automations{ background:linear-gradient(180deg, rgba(0,229,255,.18), rgba(139,92,246,.10)); }
+    .serviceIcon--branding{ background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(139,92,246,.12)); }
+    .servicePrice{ white-space:nowrap; }
+    .serviceCard ul,
+    .priceCard ul{
+      margin:14px 0 0;
+      padding-left:18px;
+      color:rgba(237,237,243,.84);
+    }
+    .serviceCard li,
+    .priceCard li{ margin:7px 0; }
+    .serviceCard__foot{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:14px;
+      gap:12px;
+      margin-top:16px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,.08);
+      font-size:13px;
+    }
+    .serviceCard__foot span{ color:var(--muted); }
+    .serviceCard__foot a,
+    .serviceTable a{ color:#00E5FF; font-weight:600; }
+
+    .priceCard{ display:flex; flex-direction:column; }
+    .priceCard__badge{ width:max-content; border-color:rgba(34,197,94,.24); background:rgba(34,197,94,.08); }
+    .priceCard__price{
+      font-family:var(--font-display);
+      font-size:26px;
+      font-weight:700;
+      letter-spacing:-.02em;
+      margin:8px 0 10px;
+    }
+    .priceCard__actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:auto; padding-top:16px; }
+
+    .serviceTableWrap{ overflow:hidden; }
+    .tableScroll{ overflow:auto; border-radius:18px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); }
+    .serviceTable{ width:100%; border-collapse:collapse; min-width:860px; }
+    .serviceTable th,
+    .serviceTable td{
+      padding:13px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      text-align:left;
+      vertical-align:top;
+      font-size:14px;
+      line-height:1.45;
+    }
+    .serviceTable thead th{
+      font-family:var(--font-display);
+      background:rgba(255,255,255,.05);
+    }
+
+    .processGrid{ display:grid; grid-template-columns:repeat(6, 1fr); gap:12px; }
+    .processCard{ min-height:190px; }
+
+    .trust{ display:grid; grid-template-columns:.8fr 1.2fr; gap:20px; align-items:start; }
+    .trust .h2{ margin-top:14px; }
+    .trustGrid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; }
+    .trustItem{
+      padding:13px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.035);
+      color:rgba(237,237,243,.88);
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .projectCard__type{ width:max-content; margin-bottom:4px; }
+    .tags{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+    .tags span{
+      padding:7px 9px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      color:rgba(237,237,243,.78);
+      font-size:12px;
+    }
+    .projectResult{
+      margin-top:14px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,.08);
+      color:#22C55E;
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .finalCta{
+      padding:28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
       flex-wrap:wrap;
     }
+    .finalCta p{ max-width:66ch; line-height:1.6; margin:12px 0 0; }
     .finalCta__actions{ display:flex; gap:10px; flex-wrap:wrap; }
 
-    @media (max-width: 1060px){
-      .hero__grid{ grid-template-columns: 1fr; }
-      .hero__proof{ grid-template-columns: 1fr; }
-      .cases{ grid-template-columns: 1fr; }
+    @media (max-width: 1180px){
+      .hero__grid,
+      .story__grid,
+      .impactBand,
+      .budgetBand,
+      .trust{ grid-template-columns:1fr; }
+      .serviceGrid,
+      .pricingGrid,
+      .projectsGrid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+      .processGrid{ grid-template-columns:repeat(3, 1fr); }
+      .storyCards{ grid-template-columns:1fr; }
     }
-
-    .pillDot{
-      width:8px; height:8px; border-radius:99px;
-      background: linear-gradient(180deg, rgba(106,228,255,.85), rgba(139,92,255,.65));
-      box-shadow: 0 0 22px rgba(139,92,255,.22);
-      display:inline-block;
+    @media (max-width: 760px){
+      .hero{ padding-top:34px; }
+      .hero__grid{ gap:16px; }
+      .hero__title{ max-width:100%; }
+      .hero__lead{ font-size:16px; }
+      .heroStats{ grid-template-columns:1fr; }
+      .hero__cta .btn,
+      .finalCta__actions .btn,
+      .priceCard__actions .btn{ width:100%; }
+      .console__rail,
+      .impactGrid,
+      .budgetGrid,
+      .serviceGrid,
+      .pricingGrid,
+      .projectsGrid,
+      .processGrid,
+      .trustGrid{ grid-template-columns:1fr; }
+      .serviceCard__top{ align-items:flex-start; }
+      .servicePrice{ white-space:normal; text-align:right; }
+      .finalCta{ padding:22px; }
     }
   </style>
 </BaseLayout>
