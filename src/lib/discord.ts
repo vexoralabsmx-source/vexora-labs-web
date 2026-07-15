@@ -14,8 +14,12 @@ type AffiliateOrder = {
   created_at?: string | null;
 };
 
-const WEBHOOK_URL = (import.meta.env.DISCORD_AFFILIATE_WEBHOOK_URL || "").trim();
-const ADMIN_URL = (import.meta.env.PUBLIC_ADMIN_URL || "https://vexoralabs.shop/admin").trim();
+const WEBHOOK_URL = (process.env.DISCORD_AFFILIATE_WEBHOOK_URL || "").trim();
+const ADMIN_URL = (
+  process.env.PUBLIC_ADMIN_URL ||
+  process.env.NEXT_PUBLIC_ADMIN_URL ||
+  "https://vexoralabs.shop/admin"
+).trim();
 
 export async function sendAffiliateOrderNotification(order: AffiliateOrder) {
   if (!WEBHOOK_URL) {

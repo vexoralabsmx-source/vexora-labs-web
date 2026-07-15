@@ -7,7 +7,7 @@ type Props = { id?: string };
 const { id = "brief-builder" } = Astro.props;
 
 const locale: Locale = localeFromPath(Astro.url.pathname);
-const CONTACT_EMAIL = (import.meta.env.PUBLIC_CONTACT_EMAIL ?? "").trim() || "vexoralabsmx@gmail.com";
+const CONTACT_EMAIL = (import.meta.env.PUBLIC_CONTACT_EMAIL ?? "").trim() || "contacto@vexoralabs.shop";
 
 const t = {
   aria: locale === "en" ? "Brief builder" : "Brief builder",
