@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound(){return <main className="grid min-h-svh place-items-center bg-[#030712] px-5 text-center"><div><p className="tech-label text-cyan-300">Error / 404</p><h1 className="display mt-6 text-[clamp(4rem,15vw,10rem)]">Nada aquí.</h1><p className="mt-5 text-white/50">Esta ruta no forma parte del sistema.</p><Link href="/" className="mt-8 inline-flex min-h-12 items-center rounded-full bg-cyan-300 px-6 text-xs font-bold uppercase tracking-wider text-slate-950">Volver al inicio</Link></div></main>;}

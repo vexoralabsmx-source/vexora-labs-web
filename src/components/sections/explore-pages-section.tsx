@@ -1,0 +1,11 @@
+import Link from "next/link";
+import { ArrowUpRight, BadgeDollarSign, BriefcaseBusiness, CircleHelp, Layers3 } from "lucide-react";
+
+const destinations=[
+ { href:"/servicios", number:"01", title:"Servicios", text:"Nueve capacidades con alcance, precio desde y tiempos.", icon:Layers3, className:"md:col-span-2" },
+ { href:"/precios", number:"02", title:"Precios", text:"Starter, Core, Scale y soporte mensual.", icon:BadgeDollarSign, className:"" },
+ { href:"/proyectos", number:"03", title:"Proyectos", text:"Proyectos identificados y ejemplos transparentes.", icon:BriefcaseBusiness, className:"" },
+ { href:"/faq", number:"04", title:"FAQ", text:"Pagos, tiempos, hosting, soporte y alcance.", icon:CircleHelp, className:"md:col-span-2" },
+] as const;
+
+export function ExplorePagesSection(){return <section className="section-shell bg-[#030712]"><div className="v-container"><div className="flex flex-col justify-between gap-7 md:flex-row md:items-end"><div><p className="tech-label text-cyan-300">Explora Vexora</p><h2 className="display mt-6 text-[clamp(3rem,7vw,7rem)]">Ahora sí,<br/>todo conectado.</h2></div><p className="max-w-md text-sm leading-7 text-white/50">La experiencia principal cuenta la historia. Las páginas internas te ayudan a comparar, decidir y cotizar sin perderte.</p></div><div className="mt-14 grid auto-rows-[280px] gap-4 md:grid-cols-2 lg:grid-cols-3">{destinations.map(item=><Link key={item.href} href={item.href} className={"group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[.035] p-7 transition duration-500 hover:border-cyan-300/40 "+item.className}><div className="absolute -right-12 -top-12 size-48 rounded-full bg-cyan-300/0 blur-3xl transition group-hover:bg-cyan-300/12"/><div className="relative flex h-full flex-col"><div className="flex items-center justify-between"><span className="tech-label text-cyan-300">{item.number}</span><item.icon size={22} className="text-white/35"/></div><div className="mt-auto"><h3 className="display text-4xl md:text-5xl">{item.title}</h3><div className="mt-4 flex items-end justify-between gap-4"><p className="max-w-sm text-sm leading-6 text-white/50">{item.text}</p><ArrowUpRight className="shrink-0 transition group-hover:-translate-y-1 group-hover:translate-x-1" size={20}/></div></div></div></Link>)}</div></div></section>;}

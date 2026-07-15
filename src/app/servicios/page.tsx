@@ -1,0 +1,17 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowUpRight, Check } from "lucide-react";
+import { InteriorPage } from "@/components/layout/interior-page";
+import { PageHero } from "@/components/ui/page-hero";
+import { QuoteStrip } from "@/components/ui/quote-strip";
+import { serviceCatalog } from "@/data/offers";
+
+export const metadata: Metadata = { title: "Servicios digitales premium | Vexora Labs", description: "Webs, tiendas, bots, comunidades, branding y automatizaciones con alcance claro y diseño premium." };
+
+export default function ServicesPage(){
+  return <InteriorPage><PageHero index="01" eyebrow="Servicios" title={<>Sistemas que<br/>sí se operan.</>} description="Diseñamos y construimos soluciones digitales con alcance claro, componentes mantenibles y una experiencia que se siente propia."/>
+    <section className="section-shell bg-[#050816]"><div className="v-container"><div className="mb-12 grid gap-6 border-b border-white/10 pb-10 md:grid-cols-[1fr_.7fr]"><h2 className="display text-[clamp(2.8rem,6vw,6rem)]">Todo lo que necesita<br/>una presencia completa.</h2><p className="self-end text-sm leading-7 text-white/50">Los precios son desde y el alcance final depende de funciones, pantallas, urgencia e integraciones. Cada entrega incluye documentación y QA proporcional al proyecto.</p></div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{serviceCatalog.map((service,index)=><article id={service.slug} key={service.slug} className={"group relative min-h-[430px] overflow-hidden rounded-[2rem] border border-white/10 bg-white/[.035] p-7 transition duration-500 hover:-translate-y-1 hover:border-cyan-300/35 "+(index===1||index===5?"xl:col-span-2":"")}><div className="absolute -right-16 -top-16 size-52 rounded-full bg-cyan-300/0 blur-3xl transition group-hover:bg-cyan-300/10"/><div className="relative flex h-full flex-col"><div className="flex items-center justify-between"><span className="tech-label text-cyan-300">0{index+1} / {service.category}</span><service.icon size={23} className="text-white/35"/></div><h2 className="display mt-20 text-[clamp(2.5rem,4vw,4rem)]">{service.title}</h2><p className="mt-5 max-w-xl text-sm leading-7 text-white/55">{service.description}</p><ul className="mt-6 grid gap-2 sm:grid-cols-2">{service.features.map(feature=><li key={feature} className="flex items-center gap-2 text-xs text-white/55"><Check size={13} className="text-cyan-300"/>{feature}</li>)}</ul><div className="mt-auto flex items-end justify-between border-t border-white/10 pt-6"><div><span className="tech-label">Desde</span><strong className="mt-2 block text-2xl">{service.price} <small className="text-xs font-normal text-white/35">MXN</small></strong></div><div className="text-right"><span className="tech-label">Tiempo</span><p className="mt-2 text-xs text-white/65">{service.time}</p></div></div></div></article>)}</div>
+      <div className="mt-16 flex flex-col items-start justify-between gap-7 rounded-[2rem] border border-purple-400/20 bg-purple-400/[.06] p-8 md:flex-row md:items-center"><div><p className="tech-label text-purple-300">¿Mezclas varias capacidades?</p><h2 className="display mt-4 text-4xl md:text-6xl">Creamos un plan custom.</h2></div><Link href="/contacto" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-6 text-xs font-bold uppercase tracking-wider text-slate-950">Definir alcance <ArrowUpRight size={15}/></Link></div>
+    </div></section><QuoteStrip/></InteriorPage>;
+}

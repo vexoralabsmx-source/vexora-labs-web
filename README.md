@@ -1,217 +1,122 @@
-# Vexora Labs Web
+# Vexora Labs
 
-Sitio Astro de Vexora Labs con sistema de afiliados sobre Supabase, PostgreSQL, RLS y notificaciones privadas a Discord.
+Experiencia web cinematográfica para [vexoralabs.shop](https://vexoralabs.shop), construida con Next.js, TypeScript, Tailwind CSS, GSAP, Lenis y React Three Fiber.
 
-No usa SellAuth. No hay webhook de SellAuth. Las ventas usan `invoice_id` interno y las comisiones solo se crean cuando un admin aprueba una orden desde `/admin`.
+## Requisitos
 
-## 1. Instalacion
+- Node.js 20 o superior.
+- npm 10 o superior.
+
+## Instalación
 
 ```bash
 npm install
 npm run dev
 ```
 
-El proyecto usa Astro en modo server para poder ejecutar endpoints privados en `src/pages/api`.
+Abre `http://localhost:3000`.
 
-## 2. Variables de entorno
-
-Crea `.env` a partir de `.env.example`:
+## Comandos
 
 ```bash
-PUBLIC_SUPABASE_URL=
-PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-DISCORD_AFFILIATE_WEBHOOK_URL=
-PUBLIC_SITE_URL=https://vexoralabs.shop
-PUBLIC_ADMIN_URL=https://vexoralabs.shop/admin
-AFFILIATE_DEFAULT_COMMISSION_RATE=0.20
+npm run dev
+npm run lint
+npx tsc --noEmit
+npm run build
+npm run start
 ```
 
-`DISCORD_AFFILIATE_WEBHOOK_URL` y `SUPABASE_SERVICE_ROLE_KEY` son privadas. Configuralas como variables server-side en Netlify o tu host. No las expongas como `PUBLIC_`.
+## Variables de entorno
 
-## 3. Crear tablas y RPCs en Supabase
+Copia `.env.example` a `.env.local`.
 
-Abre Supabase SQL Editor y ejecuta completo:
+- `NEXT_PUBLIC_SITE_URL`: dominio canónico.
+- `NEXT_PUBLIC_CONTACT_EMAIL`: correo público opcional.
+- `NEXT_PUBLIC_WHATSAPP_NUMBER`: WhatsApp público opcional.
+- `CONTACT_WEBHOOK_URL`: webhook privado utilizado por `/api/contact`.
 
-```text
-supabase/referrals.sql
+Si `CONTACT_WEBHOOK_URL` no existe, el formulario responde con un error honesto y no simula un envío.
+
+## Estructura
+
+- `src/app`: rutas, metadata, sitemap, robots y API de contacto.
+- `src/components/sections`: narrativa y secciones de la página.
+- `src/components/ui`: partículas, cursor, botones y primitivas UI.
+- `src/components/three`: núcleo 3D.
+- `src/data`: servicios, proyectos, proceso, métricas y configuración.
+- `src/hooks`: preferencias del dispositivo.
+- `public/brand`: logo oficial.
+- `public/videos`: GIF, WebM, MP4 y poster oficiales.
+
+## Video del hero
+
+El hero usa, en este orden:
+
+1. `public/videos/vexora-build.webm`
+2. `public/videos/vexora-build.mp4`
+3. `public/videos/vexora-build.gif` como asset de respaldo
+
+GSAP y ScrollTrigger convierten el progreso vertical en `currentTime`. La actualización usa `requestAnimationFrame`, interpolación y limpieza al desmontar.
+
+Para reemplazar el asset, conserva el mismo encuadre y genera:
+
+```bash
+ffmpeg -i origen.gif -an -c:v libvpx-vp9 -crf 24 -b:v 0 public/videos/vexora-build.webm
+ffmpeg -i origen.gif -an -movflags +faststart -pix_fmt yuv420p public/videos/vexora-build.mp4
+ffmpeg -i origen.gif -vf "select=eq(n\,0)" -frames:v 1 public/videos/vexora-build-poster.webp
 ```
 
-Si ya habias ejecutado una version vieja del modulo de referidos, respalda o elimina las tablas incompatibles antes de correr el nuevo SQL. El esquema actual reemplaza el flujo antiguo de codigos de venta por `affiliate_orders` con `invoice_id` interno.
+Para una secuencia, guarda WebP numerados en `public/frames/vexora/frame-0001.webp` y sustituye el hook de video por un canvas que pinte el frame según el progreso.
 
-El SQL crea:
+## Editar contenido
 
-- `admin_users`
-- `affiliate_profiles`
-- `affiliate_referrals`
-- `affiliate_orders`
-- `affiliate_commissions`
-- `affiliate_payouts`
-- `affiliate_audit_logs`
-- funciones RPC
-- triggers
-- indices
-- Row Level Security
+- Proyectos: `src/data/projects.ts`.
+- Servicios: `src/data/services.ts`.
+- Proceso: `src/data/process.ts`.
+- Métricas verificables: `src/data/metrics.ts`.
+- Enlaces y contacto: `src/data/site-config.ts` y `src/data/navigation.ts`.
 
-## 4. Crear el primer admin
+No se incluyen testimonios, clientes ni resultados inventados.
 
-Primero crea/inicia sesion con el usuario en Supabase Auth. Copia su `auth.users.id` y ejecuta:
+## Rendimiento
 
-```sql
-insert into public.admin_users (user_id, role)
-values ('USER_ID_AQUI', 'owner')
-on conflict (user_id) do update set role = excluded.role;
+- WebM prioritario y 3D cargado de forma dinámica.
+- DPR limitado.
+- Menos partículas en móvil y reduced motion.
+- Canvas sin interacción con el puntero salvo el texto de partículas.
+- Video, animaciones y listeners se limpian al desmontar.
+- El sitio conserva contenido HTML cuando WebGL no está disponible.
+
+Para reducir partículas cambia `particleCount` en `manifesto-section.tsx`. Para desactivar 3D sustituye `CoreCanvas` por el fallback HTML de `three-lab-section.tsx`.
+
+## Pruebas manuales
+
+- 320, 375, 430, 768, 1024, 1366, 1440 y 1920 px.
+- Navegación con teclado y Escape.
+- Menú móvil y anchors.
+- `prefers-reduced-motion: reduce`.
+- Touch y mouse.
+- Video ausente.
+- WebGL desactivado.
+- Formulario con webhook configurado y sin configurar.
+- Cambio de orientación.
+
+En DevTools, activa reduced motion desde Rendering o desde el sistema operativo. Para simular móvil usa Device Toolbar y verifica que no exista scroll horizontal.
+
+## Deploy
+
+### Vercel
+
+Importa el repositorio, configura las variables y publica. Next.js se detecta automáticamente.
+
+### Netlify
+
+Usa el adaptador oficial de Next.js, comando `npm run build` y configura las mismas variables en el panel.
+
+Antes de publicar:
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
 ```
-
-Solo usuarios registrados en `admin_users` pueden aprobar ventas, rechazar ventas, pagar comisiones y crear payouts.
-
-## 5. Configurar Discord Webhook
-
-En Discord crea un Incoming Webhook para el canal de operaciones. Guarda la URL en:
-
-```text
-DISCORD_AFFILIATE_WEBHOOK_URL
-```
-
-El webhook solo se usa desde server-side en:
-
-- `src/lib/discord.ts`
-- `src/pages/api/affiliate/order-created.ts`
-- `src/pages/api/admin/notify-order.ts`
-
-Si Discord falla, la venta queda guardada y el frontend muestra warning.
-
-## 6. Probar link de referido
-
-1. Inicia sesion en `/cuenta`.
-2. Copia tu link de afiliado:
-
-```text
-https://vexoralabs.shop/cuenta/?ref=CODIGO
-```
-
-3. Abre ese link en otro navegador o sesion.
-4. Registra o inicia sesion con otro usuario.
-5. El frontend llama `claim_referral_code(p_invite_code)`.
-6. Supabase valida que no sea autorreferido y que el usuario no tenga otro afiliado.
-
-## 7. Reportar una venta
-
-Desde `/cuenta`, el afiliado llena:
-
-- `invoice_id`
-- cliente
-- contacto
-- servicio
-- monto
-- metodo de pago
-- notas
-- `proof_url` opcional
-
-La RPC `create_affiliate_order` crea una orden con:
-
-```text
-status = pending_review
-source = affiliate_report
-```
-
-No se crea comision en este paso.
-
-## 8. Aprobar una venta
-
-Desde `/admin`, pulsa `Aprobar` en una orden pendiente.
-
-La RPC `approve_affiliate_order`:
-
-- valida admin
-- valida que la orden este pendiente
-- crea `affiliate_commissions`
-- suma saldo pendiente
-- suma historico ganado
-- cambia la orden a `approved`
-- registra audit log
-
-## 9. Rechazar una venta
-
-Desde `/admin`, pulsa `Rechazar` y escribe el motivo.
-
-La RPC `reject_affiliate_order`:
-
-- cambia la orden a `rejected`
-- guarda `rejection_reason`
-- no crea comision
-- registra audit log
-
-## 10. Pagar comisiones
-
-Hay dos opciones en `/admin`:
-
-- Marcar una comision individual como pagada.
-- Crear payout para un afiliado, lo que marca todas sus comisiones pendientes como pagadas.
-
-Al pagar:
-
-- baja `referral_balance_cents`
-- no baja `lifetime_earned_cents`
-- registra audit log
-
-## 11. Evitar fraudes
-
-Reglas ya aplicadas:
-
-- No se permiten autorreferidos.
-- Un referido solo puede pertenecer a un afiliado.
-- `invoice_id` es unico.
-- No hay comision hasta aprobacion admin.
-- Afiliados no pueden aprobar, rechazar ni pagar.
-- RLS limita lecturas por usuario.
-- Mutaciones sensibles corren por RPC con validaciones.
-
-Buenas practicas operativas:
-
-- Verifica comprobante y contacto antes de aprobar.
-- Revisa invoices duplicados o sospechosos.
-- Usa notas admin para dejar contexto.
-- Paga solo por canales que puedas auditar.
-
-## 12. Deploy
-
-El proyecto usa `@astrojs/netlify` y `output: "server"`.
-
-No subas solo la carpeta `dist` con drag-and-drop. En modo server, Astro genera la app SSR y funciones de Netlify fuera de `dist`; si publicas solo `dist`, Netlify no tiene `index.html` ni la funcion SSR y devuelve 404.
-
-Deploy recomendado:
-
-1. Sube el proyecto completo a GitHub/GitLab/Bitbucket.
-2. En Netlify crea el sitio desde ese repo.
-3. Configura las variables de entorno publicas y privadas server-side.
-4. Usa:
-
-```text
-Build command: npm run build
-Publish directory: dist
-```
-
-Estos valores tambien quedan definidos en `netlify.toml`.
-
-## 13. Si Discord no manda notificacion
-
-Revisa:
-
-- que `DISCORD_AFFILIATE_WEBHOOK_URL` exista en el entorno server-side
-- que la URL sea de Incoming Webhook valida
-- logs del endpoint `/api/affiliate/order-created`
-- logs del endpoint `/api/admin/notify-order`
-- permisos del canal de Discord
-
-La orden no se revierte si Discord falla.
-
-## Archivos principales
-
-- `supabase/referrals.sql`
-- `src/lib/supabase.ts`
-- `src/lib/discord.ts`
-- `src/pages/cuenta/index.astro`
-- `src/pages/admin/index.astro`
-- `src/pages/api/affiliate/order-created.ts`
-- `src/pages/api/admin/notify-order.ts`
